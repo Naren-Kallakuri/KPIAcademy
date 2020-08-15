@@ -3,22 +3,17 @@ APIs for configuring credit eligibility requirements and tracking
 whether a user has satisfied those requirements.
 """
 
-
 import logging
 
-import six
 from opaque_keys.edx.keys import CourseKey
 
-from course_modes.models import CourseMode
 from openedx.core.djangoapps.credit.email_utils import send_credit_notifications
-from openedx.core.djangoapps.credit.exceptions import InvalidCreditCourse, InvalidCreditRequirements
+from openedx.core.djangoapps.credit.exceptions import InvalidCreditRequirements, InvalidCreditCourse
 from openedx.core.djangoapps.credit.models import (
-    CreditCourse,
-    CreditEligibility,
-    CreditRequest,
-    CreditRequirement,
-    CreditRequirementStatus
+    CreditCourse, CreditRequirement, CreditRequirementStatus, CreditEligibility, CreditRequest
 )
+
+from course_modes.models import CourseMode
 from student.models import CourseEnrollment
 
 # TODO: Cleanup this mess! ECOM-2908
@@ -88,8 +83,8 @@ def set_credit_requirements(course_key, requirements):
     if requirements_to_disable:
         CreditRequirement.disable_credit_requirements(requirements_to_disable)
 
-    for sort_value, requirement in enumerate(requirements):
-        CreditRequirement.add_or_update_course_requirement(credit_course, requirement, sort_value)
+    for order, requirement in enumerate(requirements):
+        CreditRequirement.add_or_update_course_requirement(credit_course, requirement, order)
 
 
 def get_credit_requirements(course_key, namespace=None):
@@ -180,12 +175,12 @@ def get_eligibilities_for_user(username, course_key=None):
     """
     eligibilities = CreditEligibility.get_user_eligibilities(username)
     if course_key:
-        course_key = CourseKey.from_string(six.text_type(course_key))
+        course_key = CourseKey.from_string(unicode(course_key))
         eligibilities = eligibilities.filter(course__course_key=course_key)
 
     return [
         {
-            "course_key": six.text_type(eligibility.course.course_key),
+            "course_key": unicode(eligibility.course.course_key),
             "deadline": eligibility.deadline,
         }
         for eligibility in eligibilities
@@ -262,7 +257,7 @@ def set_credit_requirement_status(user, course_key, req_namespace, req_name, sta
                 u'because the requirement does not exist. '
                 u'The user "%s" should have had his/her status updated to "%s".'
             ),
-            six.text_type(course_key), req_namespace, req_name, user.username, status
+            unicode(course_key), req_namespace, req_name, user.username, status
         )
         return
 
@@ -316,7 +311,7 @@ def remove_credit_requirement_status(username, course_key, req_namespace, req_na
                 u'with namespace "%s" and name "%s" '
                 u'because the requirement does not exist. '
             ),
-            six.text_type(course_key), req_namespace, req_name
+            unicode(course_key), req_namespace, req_name
         )
         return
 
@@ -376,8 +371,7 @@ def get_credit_requirement_status(course_key, username, namespace=None, name=Non
             "reason": requirement_status.reason if requirement_status else None,
             "status": requirement_status.status if requirement_status else None,
             "status_date": requirement_status.modified if requirement_status else None,
-            # We retain the old name "order" in the API because changing APIs takes a lot more coordination.
-            "order": requirement.sort_value,
+            "order": requirement.order,
         })
     return statuses
 

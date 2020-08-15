@@ -2,13 +2,11 @@
     Tests for comprehensive them
 """
 
-
+from courseware.tests.factories import GlobalStaffFactory
 from django.conf import settings
 from django.contrib.messages.middleware import MessageMiddleware
-from django.contrib.sites.models import Site
 from django.test import TestCase
-
-from lms.djangoapps.courseware.tests.factories import GlobalStaffFactory
+from django.contrib.sites.models import Site
 from openedx.core.djangoapps.theming.middleware import CurrentSiteThemeMiddleware
 from student.tests.factories import UserFactory
 
@@ -45,15 +43,12 @@ class TestThemingViews(TestCase):
         """
         # Anonymous users get redirected to the login page
         response = self.client.get(THEMING_ADMIN_URL)
-        # Studio login redirects to LMS login
-        expected_target_status_code = 200 if settings.ROOT_URLCONF == 'lms.urls' else 302
         self.assertRedirects(
             response,
             '{login_url}?next={url}'.format(
                 login_url=settings.LOGIN_URL,
                 url=THEMING_ADMIN_URL,
-            ),
-            target_status_code=expected_target_status_code
+            )
         )
 
         # Logged in non-global staff get a 404
@@ -86,10 +81,10 @@ class TestThemingViews(TestCase):
 
         # Next request a page and verify that the correct theme has been chosen
         response = self.client.get(THEMING_ADMIN_URL)
-        self.assertEqual(response.status_code, 200)
+        self.assertEquals(response.status_code, 200)
         self.assertContains(
             response,
-            u'<option value="{theme_name}" selected=selected>'.format(theme_name=TEST_THEME_NAME)
+            '<option value="{theme_name}" selected=selected>'.format(theme_name=TEST_THEME_NAME)
         )
 
         # Request to reset the theme
@@ -103,8 +98,8 @@ class TestThemingViews(TestCase):
 
         # Finally verify that the test theme is no longer selected
         response = self.client.get(THEMING_ADMIN_URL)
-        self.assertEqual(response.status_code, 200)
+        self.assertEquals(response.status_code, 200)
         self.assertContains(
             response,
-            u'<option value="{theme_name}">'.format(theme_name=TEST_THEME_NAME)
+            '<option value="{theme_name}">'.format(theme_name=TEST_THEME_NAME)
         )

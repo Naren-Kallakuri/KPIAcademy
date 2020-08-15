@@ -1,21 +1,20 @@
 """ Tests for OAuth 2.0 client credentials support. """
-
+from __future__ import unicode_literals
 
 import json
 import unittest
 
 from django.conf import settings
-from django.test import TestCase
 from django.urls import reverse
+from django.test import TestCase
 from edx_oauth2_provider.tests.factories import ClientFactory
 from oauth2_provider.models import Application
 from provider.oauth2.models import AccessToken
-
 from student.tests.factories import UserFactory
 
-from ..adapters import DOTAdapter
 from . import mixins
 from .constants import DUMMY_REDIRECT_URL
+from ..adapters import DOTAdapter
 
 
 @unittest.skipUnless(settings.FEATURES.get("ENABLE_OAUTH2_PROVIDER"), "OAuth2 not enabled")
@@ -39,7 +38,7 @@ class ClientCredentialsTest(mixins.AccessTokenMixin, TestCase):
         response = self.client.post(reverse('oauth2:access_token'), data)
         self.assertEqual(response.status_code, 200)
 
-        access_token = json.loads(response.content.decode('utf-8'))['access_token']
+        access_token = json.loads(response.content)['access_token']
         expected = AccessToken.objects.filter(client=oauth_client, user=self.user).first().token
         self.assertEqual(access_token, expected)
 
@@ -70,7 +69,7 @@ class ClientCredentialsTest(mixins.AccessTokenMixin, TestCase):
         response = self.client.post(reverse('access_token'), data)
         self.assertEqual(response.status_code, 200)
 
-        content = json.loads(response.content.decode('utf-8'))
+        content = json.loads(response.content)
         access_token = content['access_token']
         self.assertEqual(content['scope'], data['scope'])
         self.assert_valid_jwt_access_token(access_token, self.user, scopes)

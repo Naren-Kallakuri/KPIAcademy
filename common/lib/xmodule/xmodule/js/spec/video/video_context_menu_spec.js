@@ -173,7 +173,6 @@
         describe('when video is right-clicked', function() {
             beforeEach(function() {
                 state = jasmine.initializePlayer();
-                jasmine.mockFullscreenAPI();
                 openMenu();
             });
 

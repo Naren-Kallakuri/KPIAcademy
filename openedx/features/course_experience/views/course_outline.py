@@ -1,10 +1,8 @@
 """
 Views to show a course outline.
 """
-
-
-import datetime
 import re
+import datetime
 
 from completion import waffle as completion_waffle
 from django.contrib.auth.models import User
@@ -15,14 +13,15 @@ from pytz import UTC
 from waffle.models import Switch
 from web_fragments.fragment import Fragment
 
-from lms.djangoapps.courseware.courses import get_course_overview_with_access
+from courseware.courses import get_course_overview_with_access
 from openedx.core.djangoapps.plugin_api.views import EdxFragmentView
 from student.models import CourseEnrollment
+
 from util.milestones_helpers import get_course_content_milestones
 from xmodule.course_module import COURSE_VISIBILITY_PUBLIC
 from xmodule.modulestore.django import modulestore
-
 from ..utils import get_course_outline_block_tree, get_resume_block
+
 
 DEFAULT_COMPLETION_TRACKING_START = datetime.datetime(2018, 1, 24, tzinfo=UTC)
 
@@ -67,10 +66,6 @@ class CourseOutlineFragmentView(EdxFragmentView):
         context['gated_content'] = gated_content
         context['xblock_display_names'] = xblock_display_names
 
-        page_context = kwargs.get('page_context', None)
-        if page_context:
-            context['self_paced'] = page_context.get('pacing_type', 'instructor_paced') == 'self_paced'
-
         html = render_to_string('course_experience/course-outline-fragment.html', context)
         return Fragment(html)
 
@@ -81,13 +76,12 @@ class CourseOutlineFragmentView(EdxFragmentView):
         if xblock_display_names is None:
             xblock_display_names = {}
 
-        if not course_block_tree.get('authorization_denial_reason'):
-            if course_block_tree.get('id'):
-                xblock_display_names[course_block_tree['id']] = course_block_tree['display_name']
+        if course_block_tree.get('id'):
+            xblock_display_names[course_block_tree['id']] = course_block_tree['display_name']
 
-            if course_block_tree.get('children'):
-                for child in course_block_tree['children']:
-                    self.create_xblock_id_and_name_dict(child, xblock_display_names)
+        if course_block_tree.get('children'):
+            for child in course_block_tree['children']:
+                self.create_xblock_id_and_name_dict(child, xblock_display_names)
 
         return xblock_display_names
 

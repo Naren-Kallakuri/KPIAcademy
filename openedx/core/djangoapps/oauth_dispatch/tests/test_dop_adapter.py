@@ -2,14 +2,13 @@
 Tests for DOP Adapter
 """
 
-
 from datetime import timedelta
 
 import ddt
 from django.test import TestCase
 from django.utils.timezone import now
-from provider import constants
 from provider.oauth2 import models
+from provider import constants
 
 from student.tests.factories import UserFactory
 

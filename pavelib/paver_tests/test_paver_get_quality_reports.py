@@ -1,8 +1,6 @@
 """
 Tests to ensure only the report files we want are returned as part of run_quality.
 """
-
-
 import unittest
 
 from mock import patch

@@ -4,7 +4,6 @@ These messages are displayed to users when they are blocked
 from either enrolling in or accessing a course.
 
 """
-
 from collections import namedtuple
 
 BlockedMessage = namedtuple('BlockedMessage', [

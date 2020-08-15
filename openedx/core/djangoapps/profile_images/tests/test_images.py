@@ -1,7 +1,6 @@
 """
 Test cases for image processing functions in the profile image package.
 """
-
 from contextlib import closing
 from itertools import product
 import os
@@ -40,6 +39,7 @@ class TestValidateUploadedImage(TestCase):
             valid_file_types=_get_valid_file_types()
         )
     )
+    shard = 2
 
     def check_validation_result(self, uploaded_file, expected_failure_message):
         """
@@ -130,6 +130,7 @@ class TestGenerateProfileImages(TestCase):
     """
     Test create_profile_images
     """
+    shard = 2
 
     def check_exif_orientation(self, image, expected_orientation):
         """
@@ -226,6 +227,7 @@ class TestRemoveProfileImages(TestCase):
     """
     Test remove_profile_images
     """
+    shard = 2
 
     def test_remove(self):
         """
@@ -244,5 +246,5 @@ class TestRemoveProfileImages(TestCase):
         ):
             remove_profile_images(requested_sizes)
             deleted_names = [v[0][0] for v in mock_storage.delete.call_args_list]
-            self.assertEqual(list(requested_sizes.values()), deleted_names)
+            self.assertEqual(requested_sizes.values(), deleted_names)
             mock_storage.save.reset_mock()

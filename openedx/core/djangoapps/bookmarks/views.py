@@ -4,17 +4,12 @@ HTTP end-points for the Bookmarks API.
 For more information, see:
 https://openedx.atlassian.net/wiki/display/TNL/Bookmarks+API
 """
-
-
 import logging
 
-import eventtracking
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_noop
-import edx_api_doc_tools as apidocs
-from edx_rest_framework_extensions.paginators import DefaultPagination
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey, UsageKey
 from rest_framework import permissions, status
@@ -22,9 +17,11 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from openedx.core.lib.api.authentication import OAuth2AuthenticationDeprecated
+from rest_framework_oauth.authentication import OAuth2Authentication
 
+import eventtracking
 from openedx.core.djangoapps.bookmarks.api import BookmarksLimitReachedError
+from edx_rest_framework_extensions.paginators import DefaultPagination
 from openedx.core.lib.api.permissions import IsUserInUrl
 from openedx.core.lib.url_utils import unquote_slashes
 from xmodule.modulestore.exceptions import ItemNotFoundError
@@ -97,50 +94,71 @@ class BookmarksViewMixin(object):
 
 
 class BookmarksListView(ListCreateAPIView, BookmarksViewMixin):
-    """REST endpoints for lists of bookmarks."""
+    """
+    **Use Case**
 
-    authentication_classes = (OAuth2AuthenticationDeprecated, SessionAuthentication)
+        * Get a paginated list of bookmarks for a user.
+
+            The list can be filtered by passing parameter "course_id=<course_id>"
+            to only include bookmarks from a particular course.
+
+            The bookmarks are always sorted in descending order by creation date.
+
+            Each page in the list contains 10 bookmarks by default. The page
+            size can be altered by passing parameter "page_size=<page_size>".
+
+            To include the optional fields pass the values in "fields" parameter
+            as a comma separated list. Possible values are:
+
+                * "display_name"
+                * "path"
+
+        * Create a new bookmark for a user.
+
+            The POST request only needs to contain one parameter "usage_id".
+
+            Http400 is returned if the format of the request is not correct,
+            the usage_id is invalid or a block corresponding to the usage_id
+            could not be found.
+
+    **Example Requests**
+
+        GET /api/bookmarks/v1/bookmarks/?course_id={course_id1}&fields=display_name,path
+
+        POST /api/bookmarks/v1/bookmarks/
+        Request data: {"usage_id": <usage-id>}
+
+    **Response Values**
+
+        * count: The number of bookmarks in a course.
+
+        * next: The URI to the next page of bookmarks.
+
+        * previous: The URI to the previous page of bookmarks.
+
+        * num_pages: The number of pages listing bookmarks.
+
+        * results:  A list of bookmarks returned. Each collection in the list
+          contains these fields.
+
+            * id: String. The identifier string for the bookmark: {user_id},{usage_id}.
+
+            * course_id: String. The identifier string of the bookmark's course.
+
+            * usage_id: String. The identifier string of the bookmark's XBlock.
+
+            * display_name: String. (optional) Display name of the XBlock.
+
+            * path: List. (optional) List of dicts containing {"usage_id": <usage-id>, display_name:<display-name>}
+                for the XBlocks from the top of the course tree till the parent of the bookmarked XBlock.
+
+            * created: ISO 8601 String. The timestamp of bookmark's creation.
+
+    """
+    authentication_classes = (OAuth2Authentication, SessionAuthentication)
     pagination_class = BookmarksPagination
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = BookmarkSerializer
-
-    @apidocs.schema(
-        parameters=[
-            apidocs.string_parameter(
-                'course_id',
-                apidocs.ParameterLocation.QUERY,
-                description="The id of the course to limit the list",
-            ),
-            apidocs.string_parameter(
-                'fields',
-                apidocs.ParameterLocation.QUERY,
-                description="The fields to return: display_name, path.",
-            ),
-        ],
-    )
-    def get(self, request, *args, **kwargs):
-        """
-        Get a paginated list of bookmarks for a user.
-
-        The list can be filtered by passing parameter "course_id=<course_id>"
-        to only include bookmarks from a particular course.
-
-        The bookmarks are always sorted in descending order by creation date.
-
-        Each page in the list contains 10 bookmarks by default. The page
-        size can be altered by passing parameter "page_size=<page_size>".
-
-        To include the optional fields pass the values in "fields" parameter
-        as a comma separated list. Possible values are:
-
-        * "display_name"
-        * "path"
-
-        # Example Requests
-
-        GET /api/bookmarks/v1/bookmarks/?course_id={course_id1}&fields=display_name,path
-        """
-        return super(BookmarksListView, self).get(request, *args, **kwargs)
 
     def get_serializer_context(self):
         """
@@ -200,21 +218,12 @@ class BookmarksListView(ListCreateAPIView, BookmarksViewMixin):
 
         return page
 
-    @apidocs.schema()
-    def post(self, request, *unused_args, **unused_kwargs):
-        """Create a new bookmark for a user.
-
-        The POST request only needs to contain one parameter "usage_id".
-
-        Http400 is returned if the format of the request is not correct,
-        the usage_id is invalid or a block corresponding to the usage_id
-        could not be found.
-
-        # Example Requests
-
-        POST /api/bookmarks/v1/bookmarks/
-        Request data: {"usage_id": <usage-id>}
+    def post(self, request):
         """
+        POST /api/bookmarks/v1/bookmarks/
+        Request data: {"usage_id": "<usage-id>"}
+        """
+
         if not request.data:
             return self.error_response(ugettext_noop(u'No data provided.'), DEFAULT_USER_MESSAGE)
 
@@ -290,7 +299,7 @@ class BookmarksDetailView(APIView, BookmarksViewMixin):
         to a requesting user's bookmark a 404 is returned. 404 will also be returned
         if the bookmark does not exist.
     """
-    authentication_classes = (OAuth2AuthenticationDeprecated, SessionAuthentication)
+    authentication_classes = (OAuth2Authentication, SessionAuthentication)
     permission_classes = (permissions.IsAuthenticated, IsUserInUrl)
 
     serializer_class = BookmarkSerializer
@@ -309,13 +318,8 @@ class BookmarksDetailView(APIView, BookmarksViewMixin):
             log.error(error_message)
             return self.error_response(error_message, error_status=status.HTTP_404_NOT_FOUND)
 
-    @apidocs.schema()
     def get(self, request, username=None, usage_id=None):
         """
-        Get a specific bookmark for a user.
-
-        # Example Requests
-
         GET /api/bookmarks/v1/bookmarks/{username},{usage_id}?fields=display_name,path
         """
         usage_key_or_response = self.get_usage_key_or_error_response(usage_id=usage_id)

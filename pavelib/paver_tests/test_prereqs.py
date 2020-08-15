@@ -2,15 +2,14 @@
 Tests covering the Open edX Paver prequisites installation workflow
 """
 
-
 import os
 import unittest
 
 from mock import patch
 from paver.easy import BuildFailure
 
-import pavelib.prereqs
 from pavelib.paver_tests.utils import PaverTestCase, fail_on_npm_install, unexpected_fail_on_npm_install
+import pavelib.prereqs
 
 
 class TestPaverPrereqInstall(unittest.TestCase):
@@ -31,7 +30,7 @@ class TestPaverPrereqInstall(unittest.TestCase):
         self.assertEqual(
             pavelib.prereqs.no_prereq_install(),
             expected_val,
-            u'NO_PREREQ_INSTALL is set to {}, but we read it as {}'.format(
+            'NO_PREREQ_INSTALL is set to {}, but we read it as {}'.format(
                 set_val, expected_val),
         )
 
@@ -98,7 +97,7 @@ class TestPaverNodeInstall(PaverTestCase):
             with self.assertRaises(BuildFailure):
                 pavelib.prereqs.node_prereqs_installation()
         # npm install will be called twice
-        self.assertEqual(_mock_popen.call_count, 2)
+        self.assertEquals(_mock_popen.call_count, 2)
 
     def test_npm_install_called_once_when_successful(self):
         """
@@ -107,7 +106,7 @@ class TestPaverNodeInstall(PaverTestCase):
         with patch('subprocess.Popen') as _mock_popen:
             pavelib.prereqs.node_prereqs_installation()
         # when there's no failure, npm install is only called once
-        self.assertEqual(_mock_popen.call_count, 1)
+        self.assertEquals(_mock_popen.call_count, 1)
 
     def test_npm_install_with_unexpected_subprocess_error(self):
         """
@@ -117,4 +116,4 @@ class TestPaverNodeInstall(PaverTestCase):
             _mock_popen.side_effect = unexpected_fail_on_npm_install
             with self.assertRaises(BuildFailure):
                 pavelib.prereqs.node_prereqs_installation()
-        self.assertEqual(_mock_popen.call_count, 1)
+        self.assertEquals(_mock_popen.call_count, 1)

@@ -1,15 +1,13 @@
 """
 Test the populate_retirement_states management command
 """
-
-
 import copy
-
 import pytest
-from django.core.management import CommandError, call_command
 
-from openedx.core.djangoapps.user_api.management.commands.populate_retirement_states import START_STATE
+from django.core.management import call_command, CommandError
+
 from openedx.core.djangoapps.user_api.models import RetirementState, UserRetirementStatus
+from openedx.core.djangoapps.user_api.management.commands.populate_retirement_states import START_STATE
 from student.tests.factories import UserFactory
 
 pytestmark = pytest.mark.django_db
@@ -87,7 +85,7 @@ def test_out_of_order_start_state(settings):
     del settings.RETIREMENT_STATES[0]
     settings.RETIREMENT_STATES.insert(4, 'PENDING')
 
-    with pytest.raises(CommandError, match=u'{} must be the first state'.format(START_STATE)):
+    with pytest.raises(CommandError, match=r'{} must be the first state'.format(START_STATE)):
         call_command('populate_retirement_states')
 
 

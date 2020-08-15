@@ -2,7 +2,6 @@
 Removes user PII from OAuth2 models.
 """
 
-
 from oauth2_provider.models import (
     AccessToken as DOTAccessToken,
     Application as DOTApplication,

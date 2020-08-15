@@ -2,19 +2,19 @@
 Middleware for Language Preferences
 """
 
-
 from django.conf import settings
-from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import LANGUAGE_SESSION_KEY
 from django.utils.translation.trans_real import parse_accept_lang_header
 
 from openedx.core.djangoapps.lang_pref import COOKIE_DURATION, LANGUAGE_HEADER, LANGUAGE_KEY
 from openedx.core.djangoapps.user_api.errors import UserAPIInternalError, UserAPIRequestError
-from openedx.core.djangoapps.user_api.preferences.api import get_user_preference, set_user_preference
-from openedx.core.lib.mobile_utils import is_request_from_mobile_app
+from openedx.core.djangoapps.user_api.preferences.api import (
+    get_user_preference,
+    set_user_preference
+)
 
 
-class LanguagePreferenceMiddleware(MiddlewareMixin):
+class LanguagePreferenceMiddleware(object):
     """
     Middleware for user preferences.
 
@@ -71,7 +71,7 @@ class LanguagePreferenceMiddleware(MiddlewareMixin):
                     pass
 
             # If set, set the user_pref in the LANGUAGE_COOKIE
-            if user_pref and not is_request_from_mobile_app(request):
+            if user_pref:
                 response.set_cookie(
                     settings.LANGUAGE_COOKIE,
                     value=user_pref,

@@ -1,10 +1,7 @@
 """
 Tests for site configuration's django models.
 """
-
-
 from mock import patch
-import six
 
 from django.test import TestCase
 from django.db import IntegrityError, transaction
@@ -322,7 +319,10 @@ class SiteConfigurationTests(TestCase):
         )
 
         # Test that the default value is returned if the value for the given key is not found in the configuration
-        six.assertCountEqual(self, SiteConfiguration.get_all_orgs(), expected_orgs)
+        self.assertListEqual(
+            list(SiteConfiguration.get_all_orgs()),
+            expected_orgs,
+        )
 
     def test_get_all_orgs_returns_only_enabled(self):
         """
@@ -341,4 +341,7 @@ class SiteConfigurationTests(TestCase):
         )
 
         # Test that the default value is returned if the value for the given key is not found in the configuration
-        six.assertCountEqual(self, SiteConfiguration.get_all_orgs(), expected_orgs)
+        self.assertListEqual(
+            list(SiteConfiguration.get_all_orgs()),
+            expected_orgs,
+        )

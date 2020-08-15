@@ -1,14 +1,11 @@
 """
 Tests for StaticContentServer
 """
-
-
 import copy
 
 import datetime
 import ddt
 import logging
-import six
 import unittest
 from uuid import uuid4
 
@@ -92,14 +89,14 @@ class ContentStoreToyCourseTest(SharedModuleStoreTestCase):
 
         # A locked asset
         cls.locked_asset = cls.course_key.make_asset_key('asset', 'sample_static.html')
-        cls.url_locked = six.text_type(cls.locked_asset)
+        cls.url_locked = unicode(cls.locked_asset)
         cls.url_locked_versioned = get_versioned_asset_url(cls.url_locked)
         cls.url_locked_versioned_old_style = get_old_style_versioned_asset_url(cls.url_locked)
         cls.contentstore.set_attr(cls.locked_asset, 'locked', True)
 
         # An unlocked asset
         cls.unlocked_asset = cls.course_key.make_asset_key('asset', 'another_static.txt')
-        cls.url_unlocked = six.text_type(cls.unlocked_asset)
+        cls.url_unlocked = unicode(cls.unlocked_asset)
         cls.url_unlocked_versioned = get_versioned_asset_url(cls.url_unlocked)
         cls.url_unlocked_versioned_old_style = get_old_style_versioned_asset_url(cls.url_unlocked)
         cls.length_unlocked = cls.contentstore.get_attr(cls.unlocked_asset, 'length')
@@ -218,8 +215,13 @@ class ContentStoreToyCourseTest(SharedModuleStoreTestCase):
         resp = self.client.get(self.url_unlocked, HTTP_RANGE='bytes=0-')
 
         self.assertEqual(resp.status_code, 206)  # HTTP_206_PARTIAL_CONTENT
-        self.assertEqual(resp['Content-Range'], u'bytes {first}-{last}/{length}'
-                         .format(first=0, last=self.length_unlocked - 1, length=self.length_unlocked))
+        self.assertEqual(
+            resp['Content-Range'],
+            'bytes {first}-{last}/{length}'.format(
+                first=0, last=self.length_unlocked - 1,
+                length=self.length_unlocked
+            )
+        )
         self.assertEqual(resp['Content-Length'], str(self.length_unlocked))
 
     def test_range_request_partial_file(self):
@@ -228,13 +230,13 @@ class ContentStoreToyCourseTest(SharedModuleStoreTestCase):
         outputs partial content status code and valid Content-Range and Content-Length.
         first_byte and last_byte are chosen to be simple but non trivial values.
         """
-        first_byte = self.length_unlocked // 4
-        last_byte = self.length_unlocked // 2
+        first_byte = self.length_unlocked / 4
+        last_byte = self.length_unlocked / 2
         resp = self.client.get(self.url_unlocked, HTTP_RANGE='bytes={first}-{last}'.format(
             first=first_byte, last=last_byte))
 
         self.assertEqual(resp.status_code, 206)  # HTTP_206_PARTIAL_CONTENT
-        self.assertEqual(resp['Content-Range'], u'bytes {first}-{last}/{length}'.format(
+        self.assertEqual(resp['Content-Range'], 'bytes {first}-{last}/{length}'.format(
             first=first_byte, last=last_byte, length=self.length_unlocked))
         self.assertEqual(resp['Content-Length'], str(last_byte - first_byte + 1))
 
@@ -244,7 +246,6 @@ class ContentStoreToyCourseTest(SharedModuleStoreTestCase):
         """
         first_byte = self.length_unlocked / 4
         last_byte = self.length_unlocked / 2
-        # pylint: disable=unicode-format-string
         resp = self.client.get(self.url_unlocked, HTTP_RANGE='bytes={first}-{last}, -100'.format(
             first=first_byte, last=last_byte))
 
@@ -272,7 +273,7 @@ class ContentStoreToyCourseTest(SharedModuleStoreTestCase):
         416 Requested Range Not Satisfiable.
         """
         resp = self.client.get(self.url_unlocked, HTTP_RANGE='bytes={first}-{last}'.format(
-            first=(self.length_unlocked // 2), last=(self.length_unlocked // 4)))
+            first=(self.length_unlocked / 2), last=(self.length_unlocked / 4)))
         self.assertEqual(resp.status_code, 416)
 
     def test_range_request_malformed_out_of_bounds(self):
@@ -291,7 +292,7 @@ class ContentStoreToyCourseTest(SharedModuleStoreTestCase):
         """
         resp = self.client.get(self.url_unlocked)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual('Origin', resp['Vary'])
+        self.assertEquals('Origin', resp['Vary'])
 
     @patch('openedx.core.djangoapps.contentserver.models.CourseAssetCacheTtlConfig.get_cache_ttl')
     def test_cache_headers_with_ttl_unlocked(self, mock_get_cache_ttl):
@@ -304,7 +305,7 @@ class ContentStoreToyCourseTest(SharedModuleStoreTestCase):
         resp = self.client.get(self.url_unlocked)
         self.assertEqual(resp.status_code, 200)
         self.assertIn('Expires', resp)
-        self.assertEqual('public, max-age=10, s-maxage=10', resp['Cache-Control'])
+        self.assertEquals('public, max-age=10, s-maxage=10', resp['Cache-Control'])
 
     @patch('openedx.core.djangoapps.contentserver.models.CourseAssetCacheTtlConfig.get_cache_ttl')
     def test_cache_headers_with_ttl_locked(self, mock_get_cache_ttl):
@@ -321,7 +322,7 @@ class ContentStoreToyCourseTest(SharedModuleStoreTestCase):
         resp = self.client.get(self.url_locked)
         self.assertEqual(resp.status_code, 200)
         self.assertNotIn('Expires', resp)
-        self.assertEqual('private, no-cache, no-store', resp['Cache-Control'])
+        self.assertEquals('private, no-cache, no-store', resp['Cache-Control'])
 
     @patch('openedx.core.djangoapps.contentserver.models.CourseAssetCacheTtlConfig.get_cache_ttl')
     def test_cache_headers_without_ttl_unlocked(self, mock_get_cache_ttl):
@@ -351,7 +352,7 @@ class ContentStoreToyCourseTest(SharedModuleStoreTestCase):
         resp = self.client.get(self.url_locked)
         self.assertEqual(resp.status_code, 200)
         self.assertNotIn('Expires', resp)
-        self.assertEqual('private, no-cache, no-store', resp['Cache-Control'])
+        self.assertEquals('private, no-cache, no-store', resp['Cache-Control'])
 
     def test_get_expiration_value(self):
         start_dt = datetime.datetime.strptime("Thu, 01 Dec 1983 20:00:00 GMT", HTTP_DATE_FORMAT)
@@ -443,6 +444,6 @@ class ParseRangeHeaderTestCase(unittest.TestCase):
     )
     @ddt.unpack
     def test_invalid_syntax(self, header_value, exception_class, exception_message_regex):
-        self.assertRaisesRegex(
+        self.assertRaisesRegexp(
             exception_class, exception_message_regex, parse_range_header, header_value, self.content_length
         )

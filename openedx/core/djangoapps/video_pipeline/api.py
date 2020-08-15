@@ -1,7 +1,6 @@
 """
 API utils in order to communicate to edx-video-pipeline.
 """
-
 import json
 import logging
 
@@ -50,7 +49,7 @@ def update_3rd_party_transcription_service_credentials(**credentials_payload):
             is_updated = False
             log.exception(
                 ('[video-pipeline-service] Unable to update transcript credentials '
-                 u'-- org=%s -- provider=%s -- response=%s.'),
+                 '-- org=%s -- provider=%s -- response=%s.'),
                 credentials_payload.get('org'),
                 credentials_payload.get('provider'),
                 ex.content,

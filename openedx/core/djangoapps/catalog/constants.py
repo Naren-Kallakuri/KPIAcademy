@@ -1,6 +1,4 @@
 """ Constants associated with catalog """
-
-
 from enum import Enum
 
 

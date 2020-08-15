@@ -2,7 +2,6 @@
 Configuration for CCX connector
 """
 
-
 from django.apps import AppConfig
 
 

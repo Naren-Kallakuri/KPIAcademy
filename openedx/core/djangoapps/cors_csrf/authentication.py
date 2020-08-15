@@ -1,8 +1,6 @@
 """
 Django Rest Framework Authentication classes for cross-domain end-points.
 """
-
-
 from django.middleware.csrf import CsrfViewMiddleware
 from rest_framework import authentication
 

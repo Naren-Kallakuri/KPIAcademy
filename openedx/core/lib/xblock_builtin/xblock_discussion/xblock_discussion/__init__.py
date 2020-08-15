@@ -2,11 +2,9 @@
 """
 Discussion XBlock
 """
-
 import logging
-import six
-from six.moves import urllib
-from six.moves.urllib.parse import urlparse  # pylint: disable=import-error
+import urllib
+
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import reverse
 from django.utils.translation import get_language_bidi
@@ -161,7 +159,7 @@ class DiscussionXBlock(XBlock, StudioEditableXBlockMixin, XmlParserMixin):
         :rtype: bool
         """
         # normal import causes the xmodule_assets command to fail due to circular import - hence importing locally
-        from lms.djangoapps.discussion.django_comment_client.permissions import has_permission
+        from django_comment_client.permissions import has_permission
 
         return has_permission(self.django_user, permission, self.course_key)
 
@@ -176,18 +174,18 @@ class DiscussionXBlock(XBlock, StudioEditableXBlockMixin, XmlParserMixin):
         login_msg = ''
 
         if not self.django_user.is_authenticated:
-            qs = urllib.parse.urlencode({
+            qs = urllib.urlencode({
                 'course_id': self.course_key,
                 'enrollment_action': 'enroll',
                 'email_opt_in': False,
             })
-            login_msg = Text(_(u"You are not signed in. To view the discussion content, {sign_in_link} or "
-                               u"{register_link}, and enroll in this course.")).format(
-                sign_in_link=HTML(u'<a href="{url}">{sign_in_label}</a>').format(
+            login_msg = Text(_("You are not signed in. To view the discussion content, {sign_in_link} or "
+                               "{register_link}, and enroll in this course.")).format(
+                sign_in_link=HTML('<a href="{url}">{sign_in_label}</a>').format(
                     sign_in_label=_('sign in'),
                     url='{}?{}'.format(reverse('signin_user'), qs),
                 ),
-                register_link=HTML(u'<a href="/{url}">{register_label}</a>').format(
+                register_link=HTML('<a href="/{url}">{register_label}</a>').format(
                     register_label=_('register'),
                     url='{}?{}'.format(reverse('register_user'), qs),
                 ),
@@ -254,7 +252,7 @@ class DiscussionXBlock(XBlock, StudioEditableXBlockMixin, XmlParserMixin):
         """
         Applies metadata translations for attributes stored on an inlined XML element.
         """
-        for old_attr, target_attr in six.iteritems(cls.metadata_translations):
+        for old_attr, target_attr in cls.metadata_translations.iteritems():
             if old_attr in node.attrib and hasattr(block, target_attr):
                 setattr(block, target_attr, node.attrib[old_attr])
 
@@ -263,13 +261,11 @@ class DiscussionXBlock(XBlock, StudioEditableXBlockMixin, XmlParserMixin):
         """
         Attempt to load definition XML from "discussion" folder in OLX, than parse it and update block fields
         """
-        if node.get('url_name') is None:
-            return  # Newer/XBlock XML format - no need to load an additional file.
         try:
             definition_xml, _ = cls.load_definition_xml(node, runtime, block.scope_ids.def_id)
         except Exception as err:  # pylint: disable=broad-except
             log.info(
-                u"Exception %s when trying to load definition xml for block %s - assuming XBlock export format",
+                "Exception %s when trying to load definition xml for block %s - assuming XBlock export format",
                 err,
                 block
             )
@@ -278,6 +274,6 @@ class DiscussionXBlock(XBlock, StudioEditableXBlockMixin, XmlParserMixin):
         metadata = cls.load_metadata(definition_xml)
         cls.apply_policy(metadata, runtime.get_policy(block.scope_ids.usage_id))
 
-        for field_name, value in six.iteritems(metadata):
+        for field_name, value in metadata.iteritems():
             if field_name in block.fields:
                 setattr(block, field_name, value)

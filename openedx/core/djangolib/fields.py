@@ -1,7 +1,6 @@
 """
 Custom Django fields.
 """
-
 from django.db import models
 
 

@@ -5,8 +5,7 @@ init-hook="import sys; sys.path.extend(['lms/djangoapps', 'cms/djangoapps', 'com
 
 [MESSAGES CONTROL]
 # Disable unicode-format-string until we can agree to turn it on.
-disable+ =
-    native-string,
+disable+ = ,unicode-format-string
 
 [BASIC]
 attr-rgx = [a-z_][a-z0-9_]{2,40}$

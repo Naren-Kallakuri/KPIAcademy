@@ -10,14 +10,12 @@
 
     {% if form.non_field_errors|length > 0 %}
       <p class="errornote">
-          {% trans "Please correct the errors below." as tmsg %}{{tmsg|force_escape}}
+          {% trans "Please correct the errors below." %}
       </p>
       {{ form.non_field_errors }}
     {% endif %}
 
-    {% filter force_escape %}
     {% blocktrans with username=retirement.user.username %}Are you sure you want to cancel retirement for user "{{ username }}"? {% endblocktrans %}
-    {% endfilter %}
 
     <fieldset class="module aligned">
       {% for field in form %}
@@ -35,7 +33,7 @@
     </fieldset>
 
     <div class="submit-row">
-      <input type="submit" class="default" value="{% trans 'Submit' as tmsg %}{{tmsg|force_escape}}">
+      <input type="submit" class="default" value="{% trans 'Submit' %}">
     </div>
 
   </form>

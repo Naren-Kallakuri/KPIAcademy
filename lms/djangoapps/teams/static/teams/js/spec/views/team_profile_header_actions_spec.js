@@ -25,29 +25,26 @@ define([
             };
         };
 
-        createHeaderActionsView =
-            function(requests, maxTeamSize, currentUsername, teamModelData, showEditButton, isInstructorManagedTopic) {
-                var model = new TeamModel(teamModelData, {parse: true}),
-                    context = TeamSpecHelpers.createMockContext({
-                        maxTeamSize: maxTeamSize,
-                        userInfo: TeamSpecHelpers.createMockUserInfo({
-                            username: currentUsername
-                        })
-                    });
+        createHeaderActionsView = function(requests, maxTeamSize, currentUsername, teamModelData, showEditButton) {
+            var model = new TeamModel(teamModelData, {parse: true}),
+                context = TeamSpecHelpers.createMockContext({
+                    maxTeamSize: maxTeamSize,
+                    userInfo: TeamSpecHelpers.createMockUserInfo({
+                        username: currentUsername
+                    })
+                });
 
-                return new TeamProfileHeaderActionsView(
-                    {
-                        courseID: TeamSpecHelpers.testCourseID,
-                        teamEvents: TeamSpecHelpers.teamEvents,
-                        context: context,
-                        model: model,
-                        topic: isInstructorManagedTopic ?
-                            TeamSpecHelpers.createMockInstructorManagedTopic() :
-                            TeamSpecHelpers.createMockTopic(),
-                        showEditButton: showEditButton
-                    }
-                ).render();
-            };
+            return new TeamProfileHeaderActionsView(
+                {
+                    courseID: TeamSpecHelpers.testCourseID,
+                    teamEvents: TeamSpecHelpers.teamEvents,
+                    context: context,
+                    model: model,
+                    topic: TeamSpecHelpers.createMockTopic(),
+                    showEditButton: showEditButton
+                }
+            ).render();
+        };
 
         createMembershipData = function(username) {
             return [
@@ -63,12 +60,7 @@ define([
         describe('JoinButton', function() {
             beforeEach(function() {
                 setFixtures(
-                    '<div class="teams-content">\n' +
-                        '<div class="msg-content">\n' +
-                            '<div class="copy"></div>\n' +
-                        '</div>\n' +
-                        '<div class="header-action-view"></div>\n' +
-                    '</div>'
+                    '<div class="teams-content"><div class="msg-content"><div class="copy"></div></div><div class="header-action-view"></div></div>'
                 );
             });
 
@@ -142,9 +134,7 @@ define([
             it('shows already member message', function() {
                 var requests = AjaxHelpers.requests(this);
                 var currentUsername = 'ma1';
-                var view =
-                    createHeaderActionsView(
-                        requests, 1, currentUsername, createTeamModelData('teamA', 'teamAlpha', []));
+                var view = createHeaderActionsView(requests, 1, currentUsername, createTeamModelData('teamA', 'teamAlpha', []));
 
                 // a get request will be sent to get user membership info
                 // because current user is not member of current team
@@ -178,36 +168,6 @@ define([
 
                 // there should be no request made
                 AjaxHelpers.expectNoRequests(requests);
-            });
-
-            it('shows not join instructor managed team message', function() {
-                var requests = AjaxHelpers.requests(this);
-                var currentUsername = 'ma1';
-                var view = createHeaderActionsView(
-                    requests,
-                    1,
-                    currentUsername,
-                    createTeamModelData('teamA', 'teamAlpha', []),
-                    false,
-                    true);
-
-                // a get request will be sent to get user membership info
-                // because current user is not member of current team
-                AjaxHelpers.expectRequest(
-                    requests,
-                    'GET',
-                    TeamSpecHelpers.testContext.teamMembershipsUrl + '?' + $.param({
-                        username: currentUsername, course_id: TeamSpecHelpers.testCourseID
-                    })
-                );
-
-                // Mock the response so that current user is not a member of any team
-                AjaxHelpers.respondWithJson(requests, {count: 0});
-
-                // current user is a student and current team belogs to an instructor managed topic
-                // so the Join Team button is hidden and we should see the correct message
-                expect(view.$('.action.action-primary').length).toEqual(0);
-                expect(view.$('.join-team-message').text().trim()).toBe(view.notJoinInstructorManagedTeam);
             });
 
             it('shows correct error message if user fails to join team', function() {
@@ -281,11 +241,10 @@ define([
             });
 
             it('can navigate to correct url', function() {
-                var requests = AjaxHelpers.requests(this),
-                    editButton;
+                var requests = AjaxHelpers.requests(this);
                 spyOn(Backbone.history, 'navigate');
                 createAndAssertView(requests, true);
-                editButton = view.$('.action-edit-team');
+                var editButton = view.$('.action-edit-team');
 
                 expect(editButton.length).toEqual(1);
                 $(editButton).click();

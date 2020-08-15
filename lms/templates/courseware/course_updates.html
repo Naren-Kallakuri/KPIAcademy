@@ -1,4 +1,3 @@
-<%page expression_filter="h"/>
 <%! from django.utils.translation import ugettext as _ %>
 <div class="recent-updates">
   % for index, update in enumerate(visible_updates):
@@ -15,7 +14,7 @@
         ></button>
       % endif
       <div class="toggle-visibility-element article-content ${'hidden' if index >= 1 else ''}" id="msg-content-${index}">
-      ${update.get("content") | n, decode.utf8}
+      ${update.get("content")}
       </div>
     </article>
   % endfor
@@ -43,7 +42,7 @@
           aria-controls="msg-content-${index + len(visible_updates)}"
           aria-expanded="false"
       ></button>
-      <div class="toggle-visibility-element article-content hidden" id="msg-content-${index + len(visible_updates)}">${update.get("content") | n, decode.utf8}</div>
+      <div class="toggle-visibility-element article-content hidden" id="msg-content-${index + len(visible_updates)}">${update.get("content")}</div>
     </article>
   % endfor
 </div>

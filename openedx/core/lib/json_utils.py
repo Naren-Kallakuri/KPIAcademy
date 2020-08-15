@@ -2,11 +2,9 @@
 Helpers for json serialization
 """
 
-
 import datetime
 from django.core.serializers.json import DjangoJSONEncoder
 from opaque_keys.edx.keys import CourseKey, UsageKey
-import six
 
 
 class EdxJSONEncoder(DjangoJSONEncoder):
@@ -18,7 +16,7 @@ class EdxJSONEncoder(DjangoJSONEncoder):
     """
     def default(self, o):  # pylint: disable=method-hidden
         if isinstance(o, (CourseKey, UsageKey)):
-            return six.text_type(o)
+            return unicode(o)
         elif isinstance(o, datetime.datetime):
             if o.tzinfo is not None:
                 if o.utcoffset() is None:

@@ -1,11 +1,6 @@
 # Default xsslint config module.
+from xsslint.linters import JavaScriptLinter, MakoTemplateLinter, PythonLinter, UnderscoreTemplateLinter
 
-
-from xsslint.linters import (
-    JavaScriptLinter, MakoTemplateLinter,
-    PythonLinter, UnderscoreTemplateLinter,
-    DjangoTemplateLinter
-)
 
 # Define the directories that should be ignored by the script.
 SKIP_DIRS = (
@@ -49,10 +44,6 @@ MAKO_LINTER = MakoTemplateLinter(
     skip_dirs=MAKO_SKIP_DIRS
 )
 
-DJANGO_SKIP_DIRS = SKIP_DIRS
-DJANGO_LINTER = DjangoTemplateLinter(
-    skip_dirs=DJANGO_SKIP_DIRS
-)
 
 # (Required) Define the linters (code-checkers) that should be run by the script.
-LINTERS = (DJANGO_LINTER, MAKO_LINTER, UNDERSCORE_LINTER, JAVASCRIPT_LINTER, PYTHON_LINTER)
+LINTERS = (MAKO_LINTER, UNDERSCORE_LINTER, JAVASCRIPT_LINTER, PYTHON_LINTER)

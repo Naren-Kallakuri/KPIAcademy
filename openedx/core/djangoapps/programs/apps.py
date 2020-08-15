@@ -1,8 +1,6 @@
 """
 Programs Configuration
 """
-
-
 from django.apps import AppConfig
 
 

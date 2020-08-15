@@ -2,7 +2,6 @@
 Manage cross-domain configuration.
 """
 
-
 from config_models.admin import ConfigurationModelAdmin
 from django.contrib import admin
 

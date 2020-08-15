@@ -3,18 +3,18 @@ Views that dispatch processing of OAuth requests to django-oauth2-provider or
 django-oauth-toolkit as appropriate.
 """
 
+from __future__ import unicode_literals
 
 import json
 
 from django.conf import settings
-from django.utils.decorators import method_decorator
 from django.views.generic import View
 from edx_django_utils import monitoring as monitoring_utils
 from edx_oauth2_provider import views as dop_views  # django-oauth2-provider views
 from oauth2_provider import models as dot_models  # django-oauth-toolkit
 from oauth2_provider import views as dot_views
 from ratelimit import ALL
-from ratelimit.decorators import ratelimit
+from ratelimit.mixins import RatelimitMixin
 
 from openedx.core.djangoapps.auth_exchange import views as auth_exchange_views
 from openedx.core.djangoapps.oauth_dispatch import adapters
@@ -85,24 +85,21 @@ class _DispatchingView(View):
             return request.POST.get('client_id')
 
 
-@method_decorator(
-    ratelimit(
-        key='openedx.core.djangoapps.util.ratelimit.real_ip', rate=settings.RATELIMIT_RATE,
-        method=ALL, block=True
-    ), name='dispatch'
-)
-class AccessTokenView(_DispatchingView):
+class AccessTokenView(RatelimitMixin, _DispatchingView):
     """
     Handle access token requests.
     """
     dot_view = dot_views.TokenView
     dop_view = dop_views.AccessTokenView
+    ratelimit_key = 'openedx.core.djangoapps.util.ratelimit.real_ip'
+    ratelimit_rate = settings.RATELIMIT_RATE
+    ratelimit_block = True
+    ratelimit_method = ALL
 
-    def dispatch(self, request, *args, **kwargs):  # pylint: disable=arguments-differ
+    def dispatch(self, request, *args, **kwargs):
         response = super(AccessTokenView, self).dispatch(request, *args, **kwargs)
 
-        token_type = request.POST.get('token_type',
-                                      request.META.get('HTTP_X_TOKEN_TYPE', 'no_token_type_supplied')).lower()
+        token_type = request.POST.get('token_type', 'no_token_type_supplied').lower()
         monitoring_utils.set_custom_metric('oauth_token_type', token_type)
         monitoring_utils.set_custom_metric('oauth_grant_type', request.POST.get('grant_type', ''))
 
@@ -113,7 +110,7 @@ class AccessTokenView(_DispatchingView):
 
     def _build_jwt_response_from_access_token_response(self, request, response):
         """ Builds the content of the response, including the JWT token. """
-        token_dict = json.loads(response.content.decode('utf-8'))
+        token_dict = json.loads(response.content)
         jwt = create_jwt_from_token(token_dict, self.get_adapter(request))
         token_dict.update({
             'access_token': jwt,

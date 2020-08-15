@@ -2,11 +2,10 @@
 Override admin configuration for django-oauth-toolkit
 """
 
-
 from django.contrib.admin import ModelAdmin, site
 from oauth2_provider import models
 
-from .models import ApplicationAccess, ApplicationOrganization, RestrictedApplication
+from .models import RestrictedApplication, ApplicationAccess, ApplicationOrganization
 
 
 def reregister(model_class):

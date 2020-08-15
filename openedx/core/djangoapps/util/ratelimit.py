@@ -1,8 +1,3 @@
-"""
-Code to get ip from request.
-"""
-
-
 from ipware.ip import get_ip
 
 

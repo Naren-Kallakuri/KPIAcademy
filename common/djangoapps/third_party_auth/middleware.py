@@ -1,11 +1,10 @@
 """Middleware classes for third_party_auth."""
 
+import urlparse
 
-import six.moves.urllib.parse  # pylint: disable=import-error
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.urls import reverse
-from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import ugettext as _
 from requests import HTTPError
 from social_django.middleware import SocialAuthExceptionMiddleware
@@ -15,7 +14,7 @@ from student.helpers import get_next_url_for_login_page
 from . import pipeline
 
 
-class ExceptionMiddleware(SocialAuthExceptionMiddleware, MiddlewareMixin):
+class ExceptionMiddleware(SocialAuthExceptionMiddleware):
     """Custom middleware that handles conditional redirection."""
 
     def get_redirect_uri(self, request, exception):
@@ -40,7 +39,7 @@ class ExceptionMiddleware(SocialAuthExceptionMiddleware, MiddlewareMixin):
         referer_url = request.META.get('HTTP_REFERER', '')
         if (referer_url and isinstance(exception, HTTPError) and
                 exception.response.status_code == 502):
-            referer_url = six.moves.urllib.parse.urlparse(referer_url).path
+            referer_url = urlparse.urlparse(referer_url).path
             if referer_url == reverse('signin_user'):
                 messages.error(request, _('Unable to connect with the external provider, please try again'),
                                extra_tags='social-auth')

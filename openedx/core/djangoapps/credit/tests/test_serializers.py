@@ -1,16 +1,17 @@
 """ Tests for Credit API serializers. """
 
+from __future__ import unicode_literals
 
-import six
 from django.test import TestCase
 
 from openedx.core.djangoapps.credit import serializers
-from openedx.core.djangoapps.credit.tests.factories import CreditEligibilityFactory, CreditProviderFactory
+from openedx.core.djangoapps.credit.tests.factories import CreditProviderFactory, CreditEligibilityFactory
 from student.tests.factories import UserFactory
 
 
 class CreditProviderSerializerTests(TestCase):
     """ CreditProviderSerializer tests. """
+    shard = 2
 
     def test_data(self):
         """ Verify the correct fields are serialized. """
@@ -31,6 +32,7 @@ class CreditProviderSerializerTests(TestCase):
 
 class CreditEligibilitySerializerTests(TestCase):
     """ CreditEligibilitySerializer tests. """
+    shard = 2
 
     def test_data(self):
         """ Verify the correct fields are serialized. """
@@ -38,7 +40,7 @@ class CreditEligibilitySerializerTests(TestCase):
         eligibility = CreditEligibilityFactory(username=user.username)
         serializer = serializers.CreditEligibilitySerializer(eligibility)
         expected = {
-            'course_key': six.text_type(eligibility.course.course_key),
+            'course_key': unicode(eligibility.course.course_key),
             'deadline': eligibility.deadline.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
             'username': user.username,
         }

@@ -1,13 +1,13 @@
 # pylint: disable=missing-docstring
 
-
 from datetime import datetime, timedelta
 
 import factory
-import pytz
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
-from oauth2_provider.models import AccessToken, Application, RefreshToken
+import pytz
+
+from oauth2_provider.models import Application, AccessToken, RefreshToken
 from organizations.tests.factories import OrganizationFactory
 
 from openedx.core.djangoapps.oauth_dispatch.models import ApplicationAccess, ApplicationOrganization
@@ -23,7 +23,6 @@ class ApplicationFactory(DjangoModelFactory):
     client_secret = 'some_secret'
     client_type = 'confidential'
     authorization_grant_type = 'Client credentials'
-    name = FuzzyText(prefix='name', length=8)
 
 
 class ApplicationAccessFactory(DjangoModelFactory):

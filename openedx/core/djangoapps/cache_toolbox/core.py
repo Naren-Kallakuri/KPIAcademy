@@ -8,7 +8,6 @@ Core methods
 
 """
 
-
 from django.core.cache import cache
 from django.db import DEFAULT_DB_ALIAS
 

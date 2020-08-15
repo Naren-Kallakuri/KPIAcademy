@@ -2,11 +2,9 @@
 Django forms for accounts
 """
 
-
 from django import forms
 from django.core.exceptions import ValidationError
-
-from openedx.core.djangoapps.user_authn.utils import generate_password
+from openedx.core.djangoapps.user_api.accounts.utils import generate_password
 
 
 class RetirementQueueDeletionForm(forms.Form):
@@ -26,8 +24,8 @@ class RetirementQueueDeletionForm(forms.Form):
                 None,
                 # Translators: 'current_state' is a string from an enumerated list indicating the learner's retirement
                 # state. Example: FORUMS_COMPLETE
-                u"Retirement requests can only be cancelled for users in the PENDING state."
-                u" Current request state for '{original_username}': {current_state}".format(
+                "Retirement requests can only be cancelled for users in the PENDING state."
+                " Current request state for '{original_username}': {current_state}".format(
                     original_username=retirement.original_username,
                     current_state=retirement.current_state.state_name
                 )

@@ -2,7 +2,6 @@
 Configuration for the openedx.core.djangoapps.util Django application
 """
 
-
 from django.apps import AppConfig
 
 

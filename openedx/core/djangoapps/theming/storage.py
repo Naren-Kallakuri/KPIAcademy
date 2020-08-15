@@ -2,8 +2,6 @@
 Comprehensive Theming support for Django's collectstatic functionality.
 See https://docs.djangoproject.com/en/1.8/ref/contrib/staticfiles/
 """
-
-
 import os.path
 import posixpath
 import re
@@ -28,7 +26,7 @@ from openedx.core.djangoapps.theming.helpers import (
 )
 
 
-class ThemeMixin(object):
+class ThemeStorage(StaticFilesStorage):
     """
     Comprehensive theme aware Static files storage.
     """
@@ -38,10 +36,16 @@ class ThemeMixin(object):
     # instead of "images/logo.png"
     prefix = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, location=None, base_url=None, file_permissions_mode=None,
+                 directory_permissions_mode=None, prefix=None):
 
-        self.prefix = kwargs.pop('prefix', None)
-        super(ThemeMixin, self).__init__(**kwargs)
+        self.prefix = prefix
+        super(ThemeStorage, self).__init__(
+            location=location,
+            base_url=base_url,
+            file_permissions_mode=file_permissions_mode,
+            directory_permissions_mode=directory_permissions_mode,
+        )
 
     def url(self, name):
         """
@@ -70,7 +74,7 @@ class ThemeMixin(object):
         if prefix and self.themed(name, prefix):
             name = os.path.join(prefix, name)
 
-        return super(ThemeMixin, self).url(name)
+        return super(ThemeStorage, self).url(name)
 
     def themed(self, name, theme):
         """
@@ -104,10 +108,6 @@ class ThemeMixin(object):
         # in live mode check static asset in the static files dir defined by "STATIC_ROOT" setting
         else:
             return self.exists(os.path.join(theme, name))
-
-
-class ThemeStorage(ThemeMixin, StaticFilesStorage):
-    pass
 
 
 class ThemeCachedFilesMixin(CachedFilesMixin):
@@ -275,7 +275,7 @@ class ThemePipelineMixin(PipelineMixin):
         themes = get_themes()
 
         for theme in themes:
-            css_packages = self.get_themed_packages(theme.theme_dir_name, settings.PIPELINE['STYLESHEETS'])
+            css_packages = self.get_themed_packages(theme.theme_dir_name, settings.PIPELINE_CSS)
 
             from pipeline.packager import Packager
             packager = Packager(storage=self, css_packages=css_packages)

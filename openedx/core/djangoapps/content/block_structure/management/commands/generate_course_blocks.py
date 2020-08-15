@@ -1,25 +1,22 @@
 """
 Command to load course blocks.
 """
-
-
 import logging
 
-import six
 from django.core.management.base import BaseCommand
-import six
 from six import text_type
+from xmodule.modulestore.django import modulestore
 
 import openedx.core.djangoapps.content.block_structure.api as api
-import openedx.core.djangoapps.content.block_structure.store as store
-import openedx.core.djangoapps.content.block_structure.tasks as tasks
 from openedx.core.djangoapps.content.block_structure.config import STORAGE_BACKING_FOR_CACHE, waffle
+import openedx.core.djangoapps.content.block_structure.tasks as tasks
+import openedx.core.djangoapps.content.block_structure.store as store
 from openedx.core.lib.command_utils import (
     get_mutually_exclusive_required_option,
+    validate_dependent_option,
     parse_course_keys,
-    validate_dependent_option
 )
-from xmodule.modulestore.django import modulestore
+
 
 log = logging.getLogger(__name__)
 
@@ -111,16 +108,14 @@ class Command(BaseCommand):
         Sets logging levels for this module and the block structure
         cache module, based on the given the options.
         """
-        verbosity = options.get('verbosity')
-
-        if verbosity == 0:
+        if options.get('verbosity') == 0:
             log_level = logging.CRITICAL
-        elif verbosity == 1:
+        elif options.get('verbosity') == 1:
             log_level = logging.WARNING
         else:
             log_level = logging.INFO
 
-        if verbosity is not None and verbosity < 3:
+        if options.get('verbosity') < 3:
             cache_log_level = logging.CRITICAL
         else:
             cache_log_level = logging.INFO
@@ -141,7 +136,7 @@ class Command(BaseCommand):
             except Exception as ex:  # pylint: disable=broad-except
                 log.exception(
                     u'BlockStructure: An error occurred while generating course blocks for %s: %s',
-                    six.text_type(course_key),
+                    unicode(course_key),
                     text_type(ex),
                 )
 
@@ -153,7 +148,7 @@ class Command(BaseCommand):
             action = tasks.update_course_in_cache_v2 if options.get('force_update') else tasks.get_course_in_cache_v2
             task_options = {'routing_key': options['routing_key']} if options.get('routing_key') else {}
             result = action.apply_async(
-                kwargs=dict(course_id=six.text_type(course_key), with_storage=options.get('with_storage')),
+                kwargs=dict(course_id=unicode(course_key), with_storage=options.get('with_storage')),
                 **task_options
             )
             log.info(u'BlockStructure: ENQUEUED generating for course: %s, task_id: %s.', course_key, result.id)

@@ -2,7 +2,6 @@
 This module contains all general use signals.
 """
 
-
 from django.dispatch import Signal
 
 # Signal that fires when a user is graded
@@ -19,14 +18,6 @@ COURSE_GRADE_NOW_PASSED = Signal(
     providing_args=[
         'user',  # user object
         'course_id',  # course.id
-    ]
-)
-#Signal that indicates a user is now failing a course that they had previously passed.
-COURSE_GRADE_NOW_FAILED = Signal(
-    providing_args=[
-        'user',  # user object
-        'course_id',  # course.id
-        'grade',  # CourseGrade object
     ]
 )
 

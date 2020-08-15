@@ -1,14 +1,13 @@
 """ Tests for the api_admin app's views. """
 
-
 import json
 
 import ddt
 import httpretty
 from django.conf import settings
+from django.urls import reverse
 from django.test import TestCase
 from django.test.utils import override_settings
-from django.urls import reverse
 from oauth2_provider.models import get_application_model
 
 from openedx.core.djangoapps.api_admin.models import ApiAccessConfig, ApiAccessRequest
@@ -137,7 +136,8 @@ class ApiRequestStatusViewTest(ApiAdminTest):
         """
         ApiAccessRequestFactory(user=self.user, status=status)
         response = self.client.get(self.url)
-        self.assertContains(response, expected)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(expected, response.content)
 
     def test_get_with_existing_application(self):
         """
@@ -147,9 +147,11 @@ class ApiRequestStatusViewTest(ApiAdminTest):
         ApiAccessRequestFactory(user=self.user, status=ApiAccessRequest.APPROVED)
         application = ApplicationFactory(user=self.user)
         response = self.client.get(self.url)
-        self.assertContains(response, application.client_secret)
-        self.assertContains(response, application.client_id)
-        self.assertContains(response, application.redirect_uris)
+        self.assertEqual(response.status_code, 200)
+        unicode_content = response.content.decode('utf-8')
+        self.assertIn(application.client_secret, unicode_content)
+        self.assertIn(application.client_id, unicode_content)
+        self.assertIn(application.redirect_uris, unicode_content)
 
     def test_get_anonymous(self):
         """Verify that users must be logged in to see the page."""
@@ -204,7 +206,7 @@ class ApiRequestStatusViewTest(ApiAdminTest):
             'name': 'test.com',
             'redirect_uris': 'not a url'
         })
-        self.assertContains(response, 'Enter a valid URL.')
+        self.assertIn('Enter a valid URL.', response.content)
 
 
 @skip_unless_lms
@@ -218,7 +220,8 @@ class ApiTosViewTest(ApiAdminTest):
         """
         url = reverse('api_admin:api-tos')
         response = self.client.get(url)
-        self.assertContains(response, 'Terms of Service')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Terms of Service', response.content)
 
 
 class CatalogTest(ApiAdminTest):
@@ -288,7 +291,8 @@ class CatalogListViewTest(CatalogTest):
         catalog = CatalogFactory(viewers=[self.catalog_user.username])
         self.mock_catalog_endpoint({'results': [catalog.attributes]})
         response = self.client.get(self.url)
-        self.assertContains(response, catalog.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(catalog.name, response.content.decode('utf-8'))
 
     @httpretty.activate
     def test_get_no_catalogs(self):
@@ -340,7 +344,8 @@ class CatalogEditViewTest(CatalogTest):
     def test_get(self):
         self.mock_catalog_endpoint(self.catalog.attributes, catalog_id=self.catalog.id)
         response = self.client.get(self.url)
-        self.assertContains(response, self.catalog.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.catalog.name, response.content.decode('utf-8'))
 
     @httpretty.activate
     def test_delete(self):
@@ -396,12 +401,9 @@ class CatalogPreviewViewTest(CatalogTest):
         )
         response = self.client.get(self.url, {'q': '*'})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.content.decode('utf-8')), data)
+        self.assertEqual(json.loads(response.content), data)
 
     def test_get_without_query(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            json.loads(response.content.decode('utf-8')),
-            {'count': 0, 'results': [], 'next': None, 'prev': None}
-        )
+        self.assertEqual(json.loads(response.content), {'count': 0, 'results': [], 'next': None, 'prev': None})

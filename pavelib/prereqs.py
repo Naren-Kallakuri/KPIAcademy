@@ -1,19 +1,17 @@
 """
 Install Python and Node prerequisites.
 """
-
+from __future__ import print_function
 
 import hashlib
-import io
 import os
 import re
-import subprocess
 import sys
+import subprocess
+import io
 from distutils import sysconfig
 
-import six
 from paver.easy import BuildFailure, sh, task
-from six.moves import range
 
 from .utils.envs import Env
 from .utils.timer import timed
@@ -80,7 +78,7 @@ def compute_fingerprint(path_list):
             for dirname in sorted(os.listdir(path_item)):
                 path_name = os.path.join(path_item, dirname)
                 if os.path.isdir(path_name):
-                    hasher.update(str(os.stat(path_name).st_mtime).encode('utf-8'))
+                    hasher.update(str(os.stat(path_name).st_mtime))
 
         # For files, hash the contents of the file
         if os.path.isfile(path_item):
@@ -121,9 +119,9 @@ def prereq_cache(cache_name, paths, install_func):
             # Since the pip requirement files are modified during the install
             # process, we need to store the hash generated AFTER the installation
             post_install_hash = compute_fingerprint(paths)
-            cache_file.write(post_install_hash.encode('utf-8'))
+            cache_file.write(post_install_hash)
     else:
-        print(u'{cache} unchanged, skipping...'.format(cache=cache_name))
+        print('{cache} unchanged, skipping...'.format(cache=cache_name))
 
 
 def node_prereqs_installation():
@@ -152,14 +150,14 @@ def node_prereqs_installation():
         # the forked process has returned
         proc = subprocess.Popen(npm_command, stderr=npm_log_file)
         proc.wait()
-    except BuildFailure as error:
-        if cb_error_text in six.text_type(error):
+    except BuildFailure, error_text:
+        if cb_error_text in error_text:
             print("npm install error detected. Retrying...")
             proc = subprocess.Popen(npm_command, stderr=npm_log_file)
             proc.wait()
         else:
-            raise
-    print(u"Successfully installed NPM packages. Log found at {}".format(
+            raise BuildFailure(error_text)
+    print("Successfully installed NPM packages. Log found at {}".format(
         npm_log_file_path
     ))
 
@@ -175,7 +173,7 @@ def python_prereqs_installation():
 def pip_install_req_file(req_file):
     """Pip install the requirements file."""
     pip_cmd = 'pip install -q --disable-pip-version-check --exists-action w'
-    sh(u"{pip_cmd} -r {req_file}".format(pip_cmd=pip_cmd, req_file=req_file))
+    sh("{pip_cmd} -r {req_file}".format(pip_cmd=pip_cmd, req_file=req_file))
 
 
 @task
@@ -194,17 +192,12 @@ def install_node_prereqs():
 # To add a package to the uninstall list, just add it to this list! No need
 # to touch any other part of this file.
 PACKAGES_TO_UNINSTALL = [
-    "MySQL-python",                 # Because mysqlclient shares the same directory name
     "South",                        # Because it interferes with Django 1.8 migrations.
     "edxval",                       # Because it was bork-installed somehow.
     "django-storages",
     "django-oauth2-provider",       # Because now it's called edx-django-oauth2-provider.
     "edx-oauth2-provider",          # Because it moved from github to pypi
     "i18n-tools",                   # Because now it's called edx-i18n-tools
-    "moto",                         # Because we no longer use it and it conflicts with recent jsondiff versions
-    "python-saml",                  # Because python3-saml shares the same directory name
-    "pdfminer",                     # Replaced by pdfminer.six, which shares the same directory name
-    "pytest-faulthandler",          # Because it was bundled into pytest
 ]
 
 
@@ -227,7 +220,7 @@ def uninstall_python_packages():
     # So that we don't constantly uninstall things, use a hash of the packages
     # to be uninstalled.  Check it, and skip this if we're up to date.
     hasher = hashlib.sha1()
-    hasher.update(repr(PACKAGES_TO_UNINSTALL).encode('utf-8'))
+    hasher.update(repr(PACKAGES_TO_UNINSTALL))
     expected_version = hasher.hexdigest()
     state_file_path = os.path.join(PREREQS_STATE_DIR, "Python_uninstall.sha1")
     create_prereqs_cache_dir()
@@ -249,7 +242,7 @@ def uninstall_python_packages():
         for package_name in PACKAGES_TO_UNINSTALL:
             if package_in_frozen(package_name, frozen):
                 # Uninstall the pacakge
-                sh(u"pip uninstall --disable-pip-version-check -y {}".format(package_name))
+                sh("pip uninstall --disable-pip-version-check -y {}".format(package_name))
                 uninstalled = True
         if not uninstalled:
             break
@@ -260,7 +253,7 @@ def uninstall_python_packages():
 
     # Write our version.
     with io.open(state_file_path, "wb") as state_file:
-        state_file.write(expected_version.encode('utf-8'))
+        state_file.write(expected_version)
 
 
 def package_in_frozen(package_name, frozen_output):
@@ -343,7 +336,7 @@ def install_prereqs():
 
 def log_installed_python_prereqs():
     """  Logs output of pip freeze for debugging. """
-    sh(u"pip freeze > {}".format(Env.GEN_LOG_DIR + "/pip_freeze.log"))
+    sh("pip freeze > {}".format(Env.GEN_LOG_DIR + "/pip_freeze.log"))
     return
 
 

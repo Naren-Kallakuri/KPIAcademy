@@ -2,7 +2,6 @@
 Unit tests for the Course Blocks tasks
 """
 
-
 from mock import patch
 
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase

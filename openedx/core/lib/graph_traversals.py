@@ -109,7 +109,6 @@ to each node's parents.  This requires additional storage space, which
 could be eliminated if DAGs are not supported.
 
 """
-
 from collections import deque
 
 
@@ -220,7 +219,7 @@ def traverse_post_order(start_node, get_children, filter_func=None):
 
         # See if there are any additional children for this node.
         try:
-            next_child = next(current.children)
+            next_child = current.children.next()
 
         except StopIteration:
             # Since there are no children left, visit the node and

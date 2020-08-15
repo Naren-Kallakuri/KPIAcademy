@@ -1,5 +1,3 @@
-"""Factories for generating fake embargo data."""
-
 import factory
 from factory.django import DjangoModelFactory
 from xmodule.modulestore.tests.factories import CourseFactory

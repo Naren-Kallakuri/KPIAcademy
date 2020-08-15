@@ -2,25 +2,24 @@
 Functions that can are used to modify XBlock fragments for use in the LMS and Studio
 """
 
-
 import datetime
-import hashlib
 import json
 import logging
-import re
-import uuid
-import static_replace
 import markupsafe
+import re
+import static_replace
+import uuid
 from lxml import html, etree
 from contracts import contract
 
 from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import reverse
+from pytz import UTC
 from django.utils.html import escape
 from django.contrib.auth.models import User
-from django.contrib.staticfiles.storage import staticfiles_storage
-from pytz import UTC
 from edxmako.shortcuts import render_to_string
+from six import text_type
 from web_fragments.fragment import Fragment
 from xblock.core import XBlock
 from xblock.exceptions import InvalidScopeError
@@ -33,8 +32,6 @@ from xmodule.vertical_block import VerticalBlock
 from xmodule.x_module import shim_xmodule_js, XModuleDescriptor, XModule, PREVIEW_VIEWS, STUDIO_VIEW
 
 import webpack_loader.utils
-import six
-from six import text_type
 
 log = logging.getLogger(__name__)
 
@@ -57,7 +54,7 @@ def request_token(request):
     """
     # pylint: disable=protected-access
     if not hasattr(request, '_xblock_token'):
-        request._xblock_token = uuid.uuid1().hex
+        request._xblock_token = uuid.uuid1().get_hex()
 
     return request._xblock_token
 
@@ -111,7 +108,7 @@ def wrap_xblock(
         )
     ]
 
-    if isinstance(block, (XModule, XModuleDescriptor)) or getattr(block, 'uses_xmodule_styles_setup', False):
+    if isinstance(block, (XModule, XModuleDescriptor)):
         if view in PREVIEW_VIEWS:
             # The block is acting as an XModule
             css_classes.append('xmodule_display')
@@ -123,10 +120,8 @@ def wrap_xblock(
             css_classes.append('is-hidden')
 
         css_classes.append('xmodule_' + markupsafe.escape(class_name))
-
-    if isinstance(block, (XModule, XModuleDescriptor)):
         data['type'] = block.js_module_name
-        shim_xmodule_js(frag, block.js_module_name)
+        shim_xmodule_js(block, frag)
 
     if frag.js_init_fn:
         data['init'] = frag.js_init_fn
@@ -147,7 +142,7 @@ def wrap_xblock(
         'classes': css_classes,
         'display_name': block.display_name_with_default_escaped,  # xss-lint: disable=python-deprecated-display-name
         'data_attributes': u' '.join(u'data-{}="{}"'.format(markupsafe.escape(key), markupsafe.escape(value))
-                                     for key, value in six.iteritems(data)),
+                                     for key, value in data.iteritems()),
     }
 
     if hasattr(frag, 'json_init_args') and frag.json_init_args is not None:
@@ -220,7 +215,7 @@ def wrap_xblock_aside(
         'content': frag.content,
         'classes': css_classes,
         'data_attributes': u' '.join(u'data-{}="{}"'.format(markupsafe.escape(key), markupsafe.escape(value))
-                                     for key, value in six.iteritems(data)),
+                                     for key, value in data.iteritems()),
     }
 
     if hasattr(frag, 'json_init_args') and frag.json_init_args is not None:
@@ -284,7 +279,7 @@ def grade_histogram(module_id):
     from django.db import connection
     cursor = connection.cursor()
 
-    query = u"""\
+    query = """\
         SELECT courseware_studentmodule.grade,
         COUNT(courseware_studentmodule.student_id)
         FROM courseware_studentmodule
@@ -308,7 +303,7 @@ def sanitize_html_id(html_id):
     return sanitized_html_id
 
 
-@contract(user=User, block=XBlock, view=six.string_types[0], frag=Fragment, context="dict|None")
+@contract(user=User, block=XBlock, view=basestring, frag=Fragment, context="dict|None")
 def add_staff_markup(user, disable_staff_debug_info, block, view, frag, context):  # pylint: disable=unused-argument
     """
     Updates the supplied module with a new get_html function that wraps
@@ -435,7 +430,7 @@ def get_course_update_items(course_updates, provided_index=0):
             content = html_parsed[0].tail
         else:
             content = html_parsed[0].tail if html_parsed[0].tail is not None else ""
-            content += "\n".join([html.tostring(ele).decode('utf-8') for ele in html_parsed[1:]])
+            content += "\n".join([html.tostring(ele) for ele in html_parsed[1:]])
         return content
 
     if course_updates and getattr(course_updates, "items", None):
@@ -486,7 +481,7 @@ def xblock_local_resource_url(block, uri):
     as a static asset which will use a CDN in production.
     """
     xblock_class = getattr(block.__class__, 'unmixed_class', block.__class__)
-    if settings.PIPELINE['PIPELINE_ENABLED'] or not settings.REQUIRE_DEBUG:
+    if settings.PIPELINE_ENABLED or not settings.REQUIRE_DEBUG:
         return staticfiles_storage.url('xblock/resources/{package_name}/{path}'.format(
             package_name=xblock_resource_pkg(xblock_class),
             path=uri
@@ -551,20 +546,3 @@ def get_aside_from_xblock(xblock, aside_type):
         xblock.core.XBlockAside: Instance of an xblock aside
     """
     return xblock.runtime.get_aside_of_type(xblock, aside_type)
-
-
-def hash_resource(resource):
-    """
-    Hash a :class:`web_fragments.fragment.FragmentResource
-    Those hash values are used to avoid loading the resources
-    multiple times.
-    """
-    md5 = hashlib.md5()
-    for data in resource:
-        if isinstance(data, bytes):
-            md5.update(data)
-        elif isinstance(data, six.string_types):
-            md5.update(data.encode('utf-8'))
-        else:
-            md5.update(repr(data).encode('utf-8'))
-    return md5.hexdigest()

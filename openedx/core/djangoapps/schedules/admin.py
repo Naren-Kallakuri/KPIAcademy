@@ -1,19 +1,15 @@
-
-
 import functools
 
-import six
-from django import forms
 from django.contrib import admin
+from django import forms
 from django.db.models import F
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
-from opaque_keys.edx.keys import CourseKey
-
-from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from openedx.core.djangolib.markup import HTML
 
 from . import models
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from opaque_keys.edx.keys import CourseKey
 
 
 class ScheduleExperienceAdminInline(admin.StackedInline):
@@ -38,20 +34,14 @@ def _set_experience(db_name, human_name, modeladmin, request, queryset):
     ).update(
         experience_type=db_name
     )
-    modeladmin.message_user(
-        request,
-        u"{} schedule(s) were changed to use the {} experience".format(
-            rows_updated,
-            human_name,
-        )
-    )
+    modeladmin.message_user(request, "{} schedule(s) were changed to use the {} experience".format(rows_updated, human_name))
 
 
 # Generate a list of all "set_experience_to_X" actions
 experience_actions = []
 for (db_name, human_name) in models.ScheduleExperience.EXPERIENCES:
     partial = functools.partial(_set_experience, db_name, human_name)
-    partial.short_description = u"Convert the selected schedules to the {} experience".format(human_name)
+    partial.short_description = "Convert the selected schedules to the {} experience".format(human_name)
     partial.__name__ = "set_experience_to_{}".format(db_name)
     experience_actions.append(partial)
 
@@ -66,12 +56,12 @@ class KnownErrorCases(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ('schedule_start_date', _('Schedule start < course start')),
+            ('schedule_start', _('Schedule start < course start')),
         )
 
     def queryset(self, request, queryset):
-        if self.value() == 'schedule_start_date':
-            return queryset.filter(start_date__lt=F('enrollment__course__start'))
+        if self.value() == 'schedule_start':
+            return queryset.filter(start__lt=F('enrollment__course__start'))
 
 
 class CourseIdFilter(admin.SimpleListFilter):
@@ -96,7 +86,7 @@ class CourseIdFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            (overview.id, six.text_type(overview.id)) for overview in CourseOverview.objects.all().order_by('id')
+            (overview.id, unicode(overview.id)) for overview in CourseOverview.objects.all().order_by('id')
         )
 
     def queryset(self, request, queryset):
@@ -115,15 +105,15 @@ class CourseIdFilter(admin.SimpleListFilter):
         for lookup, title in self.lookup_choices:
             yield {
                 'selected': self.value() == lookup,
-                'value': six.text_type(lookup),
+                'value': unicode(lookup),
                 'display': title,
             }
 
 
 @admin.register(models.Schedule)
 class ScheduleAdmin(admin.ModelAdmin):
-    list_display = ('username', 'course_id', 'active', 'start_date', 'upgrade_deadline', 'experience_display')
-    list_display_links = ('start_date', 'upgrade_deadline', 'experience_display')
+    list_display = ('username', 'course_id', 'active', 'start', 'upgrade_deadline', 'experience_display')
+    list_display_links = ('start', 'upgrade_deadline', 'experience_display')
     list_filter = (
         CourseIdFilter,
         'experience__experience_type',
@@ -138,12 +128,12 @@ class ScheduleAdmin(admin.ModelAdmin):
 
     def deactivate_schedules(self, request, queryset):
         rows_updated = queryset.update(active=False)
-        self.message_user(request, u"{} schedule(s) were deactivated".format(rows_updated))
+        self.message_user(request, "{} schedule(s) were deactivated".format(rows_updated))
     deactivate_schedules.short_description = "Deactivate selected schedules"
 
     def activate_schedules(self, request, queryset):
         rows_updated = queryset.update(active=True)
-        self.message_user(request, u"{} schedule(s) were activated".format(rows_updated))
+        self.message_user(request, "{} schedule(s) were activated".format(rows_updated))
     activate_schedules.short_description = "Activate selected schedules"
 
     def experience_display(self, obj):

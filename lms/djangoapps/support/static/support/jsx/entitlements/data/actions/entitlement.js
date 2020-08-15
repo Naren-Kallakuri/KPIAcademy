@@ -13,10 +13,6 @@ const fetchEntitlementsFailure = error =>
   dispatch =>
     dispatch(displayError('Error Getting Entitlements', error));
 
-const emptyEntitlementsFailure = error =>
-  dispatch =>
-    dispatch(displayError('No Entitlements Found', error));
-
 const fetchEntitlements = username =>
   (dispatch) => {
     getEntitlements(username)
@@ -27,13 +23,7 @@ const fetchEntitlements = username =>
       throw new Error(response);
     })
     .then(
-      (json) => {
-        if (json.count === 0) {
-          dispatch(emptyEntitlementsFailure(''));
-        } else {
-          dispatch(fetchEntitlementsSuccess(camelize(json.results)));
-        }
-      },
+      json => dispatch(fetchEntitlementsSuccess(camelize(json.results))),
       error => dispatch(fetchEntitlementsFailure(error)),
     );
   };

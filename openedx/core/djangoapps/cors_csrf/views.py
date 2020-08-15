@@ -1,6 +1,4 @@
 """Views for enabling cross-domain requests. """
-
-
 import json
 import logging
 

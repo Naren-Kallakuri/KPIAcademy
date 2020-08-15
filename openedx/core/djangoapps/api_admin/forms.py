@@ -1,6 +1,4 @@
 """Forms for API management."""
-
-
 from django import forms
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
@@ -70,7 +68,7 @@ class ViewersField(forms.Field):
                 nonexistent_users.append(username)
         if nonexistent_users:
             raise forms.ValidationError(
-                _(u'The following users do not exist: {usernames}.').format(usernames=nonexistent_users)
+                _('The following users do not exist: {usernames}.').format(usernames=nonexistent_users)
             )
 
 

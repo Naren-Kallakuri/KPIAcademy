@@ -2,7 +2,6 @@
 Tests for functionality in openedx/core/lib/courses.py.
 """
 
-
 import ddt
 from django.test.utils import override_settings
 
@@ -10,13 +9,13 @@ from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
-import six
 from ..courses import course_image_url
 
 
 @ddt.ddt
 class CourseImageTestCase(ModuleStoreTestCase):
     """Tests for course image URLs."""
+    shard = 2
 
     def verify_url(self, expected_url, actual_url):
         """
@@ -24,13 +23,13 @@ class CourseImageTestCase(ModuleStoreTestCase):
         """
         if not expected_url.startswith("/"):
             expected_url = "/" + expected_url
-        self.assertEqual(expected_url, actual_url)
+        self.assertEquals(expected_url, actual_url)
 
     def test_get_image_url(self):
         """Test image URL formatting."""
         course = CourseFactory.create()
         self.verify_url(
-            six.text_type(course.id.make_asset_key('asset', course.course_image)),
+            unicode(course.id.make_asset_key('asset', course.course_image)),
             course_image_url(course)
         )
 
@@ -39,7 +38,7 @@ class CourseImageTestCase(ModuleStoreTestCase):
         course_image = u'before_\N{SNOWMAN}_after.jpg'
         course = CourseFactory.create(course_image=course_image)
         self.verify_url(
-            six.text_type(course.id.make_asset_key('asset', course_image.replace(u'\N{SNOWMAN}', '_'))),
+            unicode(course.id.make_asset_key('asset', course_image.replace(u'\N{SNOWMAN}', '_'))),
             course_image_url(course)
         )
 
@@ -48,7 +47,7 @@ class CourseImageTestCase(ModuleStoreTestCase):
         course_image = u'before after.jpg'
         course = CourseFactory.create(course_image=u'before after.jpg')
         self.verify_url(
-            six.text_type(course.id.make_asset_key('asset', course_image.replace(" ", "_"))),
+            unicode(course.id.make_asset_key('asset', course_image.replace(" ", "_"))),
             course_image_url(course)
         )
 
@@ -61,7 +60,7 @@ class CourseImageTestCase(ModuleStoreTestCase):
         `DEFAULT_COURSE_ABOUT_IMAGE_URL` defined in the settings.
         """
         course = CourseFactory.create(course_image='', default_store=default_store)
-        self.assertEqual(
+        self.assertEquals(
             'static/test.png',
             course_image_url(course),
         )
@@ -71,7 +70,7 @@ class CourseImageTestCase(ModuleStoreTestCase):
         banner_image = u'banner_image.jpg'
         course = CourseFactory.create(banner_image=banner_image)
         self.verify_url(
-            six.text_type(course.id.make_asset_key('asset', banner_image)),
+            unicode(course.id.make_asset_key('asset', banner_image)),
             course_image_url(course, 'banner_image')
         )
 
@@ -80,6 +79,6 @@ class CourseImageTestCase(ModuleStoreTestCase):
         thumbnail_image = u'thumbnail_image.jpg'
         course = CourseFactory.create(video_thumbnail_image=thumbnail_image)
         self.verify_url(
-            six.text_type(course.id.make_asset_key('asset', thumbnail_image)),
+            unicode(course.id.make_asset_key('asset', thumbnail_image)),
             course_image_url(course, 'video_thumbnail_image')
         )

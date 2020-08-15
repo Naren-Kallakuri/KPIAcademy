@@ -1,6 +1,5 @@
 """ DRF routers. """
 
-
 from rest_framework import routers
 
 

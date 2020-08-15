@@ -1,12 +1,10 @@
 """
 Test for forms helpers.
 """
-
 from xmodule.modulestore.tests.factories import CourseFactory
 from xmodule.modulestore.tests.django_utils import SharedModuleStoreTestCase
 
 from openedx.core.djangoapps.verified_track_content.forms import VerifiedTrackCourseForm
-import six
 
 
 class TestVerifiedTrackCourseForm(SharedModuleStoreTestCase):
@@ -24,7 +22,7 @@ class TestVerifiedTrackCourseForm(SharedModuleStoreTestCase):
 
     def test_form_validation_success(self):
         form_data = {
-            'course_key': six.text_type(self.course.id), 'verified_cohort_name': 'Verified Learners', 'enabled': True
+            'course_key': unicode(self.course.id), 'verified_cohort_name': 'Verified Learners', 'enabled': True
         }
         form = VerifiedTrackCourseForm(data=form_data)
         self.assertTrue(form.is_valid())

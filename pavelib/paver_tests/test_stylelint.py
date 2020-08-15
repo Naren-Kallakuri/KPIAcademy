@@ -1,8 +1,6 @@
 """
 Tests for Paver's Stylelint tasks.
 """
-
-
 import ddt
 from mock import MagicMock, patch
 from paver.easy import call_task

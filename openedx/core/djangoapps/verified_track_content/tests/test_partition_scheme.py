@@ -1,12 +1,9 @@
 """
 Tests for verified_track_content/partition_scheme.py.
 """
-
-
 from datetime import datetime, timedelta
 
 import pytz
-import six
 
 from course_modes.models import CourseMode
 from student.models import CourseEnrollment
@@ -103,11 +100,11 @@ class EnrollmentTrackPartitionSchemeTest(SharedModuleStoreTestCase):
         """
         Ensure that the scheme extension is correctly plugged in (via entry point in setup.py)
         """
-        self.assertEqual(UserPartition.get_scheme('enrollment_track'), EnrollmentTrackPartitionScheme)
+        self.assertEquals(UserPartition.get_scheme('enrollment_track'), EnrollmentTrackPartitionScheme)
 
     def test_create_user_partition(self):
         user_partition = UserPartition.get_scheme('enrollment_track').create_user_partition(
-            301, "partition", "test partition", parameters={"course_id": six.text_type(self.course.id)}
+            301, "partition", "test partition", parameters={"course_id": unicode(self.course.id)}
         )
         self.assertEqual(type(user_partition), EnrollmentTrackUserPartition)
         self.assertEqual(user_partition.name, "partition")
@@ -186,7 +183,7 @@ def create_enrollment_track_partition(course):
         id=1,
         name="Test Enrollment Track Partition",
         description="Test partition for segmenting users by enrollment track",
-        parameters={"course_id": six.text_type(course.id)}
+        parameters={"course_id": unicode(course.id)}
     )
     return partition
 

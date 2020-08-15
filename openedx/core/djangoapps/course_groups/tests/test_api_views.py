@@ -1,24 +1,19 @@
 """
 Tests for Cohort API
 """
-
-
 import json
 import tempfile
 
 import ddt
-import six
-from six.moves import range
 from django.urls import reverse
 from edx_oauth2_provider.tests.factories import AccessTokenFactory, ClientFactory
-
-from openedx.core.djangolib.testing.utils import skip_unless_lms
 from student.tests.factories import UserFactory
 from xmodule.modulestore.tests.django_utils import SharedModuleStoreTestCase
 from xmodule.modulestore.tests.factories import ToyCourseFactory
 
-from .. import cohorts
+from openedx.core.djangolib.testing.utils import skip_unless_lms
 from .helpers import CohortFactory
+from .. import cohorts
 
 USERNAME = 'honor'
 USER_MAIL = 'honor@example.com'
@@ -45,7 +40,7 @@ class TestCohortOauth(SharedModuleStoreTestCase):
         cls.user = UserFactory(username=USERNAME, email=USER_MAIL, password=cls.password)
         cls.staff_user = UserFactory(is_staff=True, password=cls.password)
         cls.course_key = ToyCourseFactory.create().id
-        cls.course_str = six.text_type(cls.course_key)
+        cls.course_str = unicode(cls.course_key)
 
     @ddt.data({'path_name': 'api_cohorts:cohort_settings'},
               {'path_name': 'api_cohorts:cohort_handler'}, )
@@ -131,7 +126,7 @@ class TestCohortApi(SharedModuleStoreTestCase):
         cls.user = UserFactory(username=USERNAME, email=USER_MAIL, password=cls.password)
         cls.staff_user = UserFactory(is_staff=True, password=cls.password)
         cls.course_key = ToyCourseFactory.create().id
-        cls.course_str = six.text_type(cls.course_key)
+        cls.course_str = unicode(cls.course_key)
 
     @ddt.data(
         {'is_staff': True, 'status': 200},
@@ -309,11 +304,11 @@ class TestCohortApi(SharedModuleStoreTestCase):
         assert response.status_code == status
 
         if status == 200:
-            results = json.loads(response.content.decode('utf-8'))['results']
+            results = json.loads(response.content)['results']
             expected_results = [{
                 'username': user.username,
                 'email': user.email,
-                'name': u'{} {}'.format(user.first_name, user.last_name)
+                'name': '{} {}'.format(user.first_name, user.last_name)
             } for user in users]
             assert results == expected_results
 
@@ -408,7 +403,7 @@ class TestCohortApi(SharedModuleStoreTestCase):
             "invalid": ["foo@bar"],
             "present": ["user2"]
         }
-        assert json.loads(response.content.decode('utf-8')) == expected_response
+        assert json.loads(response.content) == expected_response
 
     def test_remove_user_from_cohort_missing_username(self):
         """
@@ -452,7 +447,7 @@ class TestCohortApi(SharedModuleStoreTestCase):
         # this temporary file will be removed in `self.tearDown()`
         __, file_name = tempfile.mkstemp(suffix='.csv', dir=tempfile.mkdtemp())
         with open(file_name, 'w') as file_pointer:
-            file_pointer.write(payload)
+            file_pointer.write(payload.encode('utf-8'))
         path = reverse('api_cohorts:cohort_users_csv', kwargs={'course_key_string': self.course_str})
         user = self.staff_user if is_staff else self.user
         assert self.client.login(username=user.username, password=self.password)

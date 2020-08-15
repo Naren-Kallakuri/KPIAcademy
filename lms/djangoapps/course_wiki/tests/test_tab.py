@@ -2,11 +2,10 @@
 Tests for wiki views.
 """
 
-
 from django.conf import settings
 from django.test.client import RequestFactory
 
-from lms.djangoapps.courseware.tabs import get_course_tab_list
+from courseware.tabs import get_course_tab_list
 from student.tests.factories import AdminFactory, UserFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
@@ -14,6 +13,7 @@ from xmodule.modulestore.tests.factories import CourseFactory
 
 class WikiTabTestCase(ModuleStoreTestCase):
     """Test cases for Wiki Tab."""
+    shard = 4
 
     def setUp(self):
         super(WikiTabTestCase, self).setUp()
@@ -24,7 +24,8 @@ class WikiTabTestCase(ModuleStoreTestCase):
     def get_wiki_tab(self, user, course):
         """Returns true if the "Wiki" tab is shown."""
         request = RequestFactory().request()
-        all_tabs = get_course_tab_list(user, course)
+        request.user = user
+        all_tabs = get_course_tab_list(request, course)
         wiki_tabs = [tab for tab in all_tabs if tab.name == 'Wiki']
         return wiki_tabs[0] if len(wiki_tabs) == 1 else None
 

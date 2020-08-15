@@ -56,13 +56,10 @@ the entire cookie and use it to impersonate the victim.
 
 """
 
-
-from base64 import b64encode
 from contextlib import contextmanager
 from hashlib import sha256
 from logging import ERROR, getLogger
 
-import six
 from django.conf import settings
 from django.contrib.auth import SESSION_KEY
 from django.contrib.auth.views import redirect_to_login
@@ -70,10 +67,7 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.core import signing
 from django.http import HttpResponse
 from django.utils.crypto import get_random_string
-from django.utils.deprecation import MiddlewareMixin
-from django.utils.encoding import python_2_unicode_compatible
-
-from six import text_type  # pylint: disable=ungrouped-imports
+from six import text_type
 
 from openedx.core.lib.mobile_utils import is_request_from_mobile_app
 
@@ -89,7 +83,6 @@ class SafeCookieError(Exception):
         log.error(error_message)
 
 
-@python_2_unicode_compatible
 class SafeCookieData(object):
     """
     Cookie data that cryptographically binds and timestamps the user
@@ -149,22 +142,22 @@ class SafeCookieData(object):
         safe_cookie_string.
         """
         try:
-            raw_cookie_components = six.text_type(safe_cookie_string).split(cls.SEPARATOR)
+            raw_cookie_components = safe_cookie_string.split(cls.SEPARATOR)
             safe_cookie_data = SafeCookieData(*raw_cookie_components)
         except TypeError:
             raise SafeCookieError(
-                u"SafeCookieData BWC parse error: {0!r}.".format(safe_cookie_string)
+                "SafeCookieData BWC parse error: {0!r}.".format(safe_cookie_string)
             )
         else:
             if safe_cookie_data.version != cls.CURRENT_VERSION:
                 raise SafeCookieError(
-                    u"SafeCookieData version {0!r} is not supported. Current version is {1}.".format(
+                    "SafeCookieData version {0!r} is not supported. Current version is {1}.".format(
                         safe_cookie_data.version,
                         cls.CURRENT_VERSION,
                     ))
             return safe_cookie_data
 
-    def __str__(self):
+    def __unicode__(self):
         """
         Returns a string serialization of the safe cookie data.
         """
@@ -189,11 +182,11 @@ class SafeCookieData(object):
             unsigned_data = signing.loads(self.signature, salt=self.key_salt, max_age=settings.SESSION_COOKIE_AGE)
             if unsigned_data == self._compute_digest(user_id):
                 return True
-            log.error(u"SafeCookieData '%r' is not bound to user '%s'.", six.text_type(self), user_id)
+            log.error("SafeCookieData '%r' is not bound to user '%s'.", unicode(self), user_id)
         except signing.BadSignature as sig_error:
             log.error(
-                u"SafeCookieData signature error for cookie data {0!r}: {1}".format(  # pylint: disable=logging-format-interpolation
-                    six.text_type(self),
+                "SafeCookieData signature error for cookie data {0!r}: {1}".format(  # pylint: disable=logging-format-interpolation
+                    unicode(self),
                     text_type(sig_error),
                 )
             )
@@ -205,8 +198,8 @@ class SafeCookieData(object):
         """
         hash_func = sha256()
         for data_item in [self.version, self.session_id, user_id]:
-            hash_func.update(six.b(six.text_type(data_item)))
-            hash_func.update(six.b('|'))
+            hash_func.update(unicode(data_item))
+            hash_func.update('|')
         return hash_func.hexdigest()
 
     @staticmethod
@@ -219,10 +212,10 @@ class SafeCookieData(object):
         # Compare against unicode(None) as well since the 'value'
         # property of a cookie automatically serializes None to a
         # string.
-        if not session_id or session_id == six.text_type(None):
+        if not session_id or session_id == unicode(None):
             # The session ID should always be valid in the cookie.
             raise SafeCookieError(
-                u"SafeCookieData not created due to invalid value for session_id '{}' for user_id '{}'.".format(
+                "SafeCookieData not created due to invalid value for session_id '{}' for user_id '{}'.".format(
                     session_id,
                     user_id,
                 ))
@@ -233,13 +226,13 @@ class SafeCookieData(object):
             # as some of the session requests are made as
             # Anonymous users.
             log.debug(
-                u"SafeCookieData received empty user_id '%s' for session_id '%s'.",
+                "SafeCookieData received empty user_id '%s' for session_id '%s'.",
                 user_id,
                 session_id,
             )
 
 
-class SafeSessionMiddleware(SessionMiddleware, MiddlewareMixin):
+class SafeSessionMiddleware(SessionMiddleware):
     """
     A safer middleware implementation that uses SafeCookieData instead
     of just the session id to lookup and verify a user's session.
@@ -268,6 +261,7 @@ class SafeSessionMiddleware(SessionMiddleware, MiddlewareMixin):
         final verification before sending the response (in
         process_response).
         """
+
         cookie_data_string = request.COOKIES.get(settings.SESSION_COOKIE_NAME)
         if cookie_data_string:
 
@@ -321,6 +315,7 @@ class SafeSessionMiddleware(SessionMiddleware, MiddlewareMixin):
         Step 4. Delete the cookie, if it's marked for deletion.
 
         """
+
         response = super(SafeSessionMiddleware, self).process_response(request, response)  # Step 1
 
         if not _is_cookie_marked_for_deletion(request) and _is_cookie_present(response):
@@ -338,7 +333,7 @@ class SafeSessionMiddleware(SessionMiddleware, MiddlewareMixin):
                 _mark_cookie_for_deletion(request)
 
         if _is_cookie_marked_for_deletion(request):
-            _delete_cookie(request, response)  # Step 4
+            _delete_cookie(response)  # Step 4
 
         return response
 
@@ -372,14 +367,14 @@ class SafeSessionMiddleware(SessionMiddleware, MiddlewareMixin):
                 # conditionally set the log level.
                 log_func = log.debug if request.user.id is None else log.warning
                 log_func(
-                    u"SafeCookieData user at request '{0}' does not match user at response: '{1}'".format(
+                    "SafeCookieData user at request '{0}' does not match user at response: '{1}'".format(
                         request.safe_cookie_verified_user_id,
                         request.user.id,
                     ),
                 )
             if request.safe_cookie_verified_user_id != userid_in_session:
                 log.warning(
-                    u"SafeCookieData user at request '{0}' does not match user in session: '{1}'".format(  # pylint: disable=logging-format-interpolation
+                    "SafeCookieData user at request '{0}' does not match user in session: '{1}'".format(  # pylint: disable=logging-format-interpolation
                         request.safe_cookie_verified_user_id,
                         userid_in_session,
                     ),
@@ -430,7 +425,7 @@ class SafeSessionMiddleware(SessionMiddleware, MiddlewareMixin):
         )
 
         # Update the cookie's value with the safe_cookie_data.
-        cookies[settings.SESSION_COOKIE_NAME] = six.text_type(safe_cookie_data)
+        cookies[settings.SESSION_COOKIE_NAME] = unicode(safe_cookie_data)
 
 
 def _mark_cookie_for_deletion(request):
@@ -459,7 +454,7 @@ def _is_cookie_present(response):
     )
 
 
-def _delete_cookie(request, response):
+def _delete_cookie(response):
     """
     Delete the cookie by setting the expiration to a date in the past,
     while maintaining the domain, secure, and httponly settings.
@@ -472,21 +467,6 @@ def _delete_cookie(request, response):
         secure=settings.SESSION_COOKIE_SECURE or None,
         httponly=settings.SESSION_COOKIE_HTTPONLY or None,
     )
-
-    # Log the cookie, but cap the length and base64 encode to make sure nothing
-    # malicious gets directly dumped into the log.
-    cookie_header = request.META.get('HTTP_COOKIE', '')[:4096]
-    log.warning(
-        u"Malformed Cookie Header? First 4K, in Base64: %s",
-        b64encode(six.b(cookie_header))
-    )
-
-    # Note, there is no request.user attribute at this point.
-    if hasattr(request, 'session') and hasattr(request.session, 'session_key'):
-        log.warning(
-            u"SafeCookieData deleted session cookie for session %s",
-            request.session.session_key
-        )
 
 
 def _is_from_logout(request):
@@ -511,6 +491,7 @@ def controlled_logging(request, logger):
 
     try:
         yield
+
     finally:
         if from_logout:
             logger.setLevel(default_level)

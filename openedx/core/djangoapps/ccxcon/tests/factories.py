@@ -1,10 +1,7 @@
 """
 Dummy factories for tests
 """
-
-
 from factory.django import DjangoModelFactory
-
 from openedx.core.djangoapps.ccxcon.models import CCXCon
 
 

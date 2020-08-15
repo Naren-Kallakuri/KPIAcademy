@@ -1,7 +1,6 @@
 """
 Defines a form for providing validation of subsection grade templates.
 """
-
 from django import forms
 
 from openedx.core.lib.courses import clean_course_id

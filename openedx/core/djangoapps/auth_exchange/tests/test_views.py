@@ -4,18 +4,17 @@ Tests for OAuth token exchange views
 
 # pylint: disable=no-member
 
-
-import json
-import unittest
 from datetime import timedelta
+import json
+import mock
+import unittest
 
 import ddt
-import httpretty
-import mock
-import provider.constants
 from django.conf import settings
-from django.test import TestCase
 from django.urls import reverse
+from django.test import TestCase
+import httpretty
+import provider.constants
 from provider.oauth2.models import AccessToken, Client
 from rest_framework.test import APIClient
 from social_django.models import Partial
@@ -23,9 +22,8 @@ from social_django.models import Partial
 from openedx.core.djangoapps.oauth_dispatch.tests import factories as dot_factories
 from student.tests.factories import UserFactory
 from third_party_auth.tests.utils import ThirdPartyOAuthTestMixinFacebook, ThirdPartyOAuthTestMixinGoogle
-
 from .mixins import DOPAdapterMixin, DOTAdapterMixin
-from .utils import TPA_FEATURE_ENABLED, TPA_FEATURES_KEY, AccessTokenExchangeTestMixin
+from .utils import AccessTokenExchangeTestMixin, TPA_FEATURE_ENABLED, TPA_FEATURES_KEY
 
 
 @ddt.ddt
@@ -47,7 +45,7 @@ class AccessTokenExchangeViewTest(AccessTokenExchangeTestMixin):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response["Content-Type"], "application/json")
         self.assertEqual(
-            json.loads(response.content.decode('utf-8')),
+            json.loads(response.content),
             {u"error": expected_error, u"error_description": expected_error_description}
         )
 
@@ -55,30 +53,25 @@ class AccessTokenExchangeViewTest(AccessTokenExchangeTestMixin):
         response = self.csrf_client.post(self.url, data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/json")
-        content = json.loads(response.content.decode('utf-8'))
+        content = json.loads(response.content)
         self.assertEqual(set(content.keys()), self.get_token_response_keys())
         self.assertEqual(content["token_type"], "Bearer")
         self.assertLessEqual(
             timedelta(seconds=int(content["expires_in"])),
             provider.constants.EXPIRE_DELTA_PUBLIC
         )
-        actual_scopes = content["scope"]
-        if actual_scopes:
-            actual_scopes = actual_scopes.split(' ')
-        else:
-            actual_scopes = []
-        self.assertEqual(set(actual_scopes), set(expected_scopes))
+        self.assertEqual(content["scope"], ' '.join(expected_scopes))
         token = self.oauth2_adapter.get_access_token(token_string=content["access_token"])
         self.assertEqual(token.user, self.user)
         self.assertEqual(self.oauth2_adapter.get_client_for_token(token), self.oauth_client)
-        self.assertEqual(set(self.oauth2_adapter.get_token_scope_names(token)), set(expected_scopes))
+        self.assertEqual(self.oauth2_adapter.get_token_scope_names(token), expected_scopes)
 
     def test_single_access_token(self):
         def extract_token(response):
             """
             Returns the access token from the response payload.
             """
-            return json.loads(response.content.decode('utf-8'))["access_token"]
+            return json.loads(response.content)["access_token"]
 
         self._setup_provider_response(success=True)
         for single_access_token in [True, False]:
@@ -99,7 +92,7 @@ class AccessTokenExchangeViewTest(AccessTokenExchangeTestMixin):
         response = self.client.get(self.url, self.data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            json.loads(response.content.decode('utf-8')),
+            json.loads(response.content),
             {
                 "error": "invalid_request",
                 "error_description": "Only POST requests allowed.",
@@ -188,7 +181,7 @@ class TestLoginWithAccessTokenView(TestCase):
         Calls the login_with_access_token endpoint and verifies the response given the expected values.
         """
         url = reverse("login_with_access_token")
-        response = self.client.post(url, HTTP_AUTHORIZATION=u"Bearer {0}".format(access_token).encode('utf-8'))
+        response = self.client.post(url, HTTP_AUTHORIZATION="Bearer {0}".format(access_token))
         self.assertEqual(response.status_code, expected_status_code)
         if expected_cookie_name:
             self.assertIn(expected_cookie_name, response.cookies)

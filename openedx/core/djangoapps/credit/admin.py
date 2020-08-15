@@ -1,8 +1,6 @@
 """
 Django admin page for credit eligibility
 """
-
-
 from django.contrib import admin
 
 from openedx.core.djangoapps.credit.models import (

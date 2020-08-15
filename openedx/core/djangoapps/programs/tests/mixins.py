@@ -1,6 +1,4 @@
 """Mixins for use during testing."""
-
-
 from openedx.core.djangoapps.programs.models import ProgramsApiConfig
 
 

@@ -1,8 +1,6 @@
-<%page expression_filter="h"/>
 <%!
 from django.urls import reverse
 from django.utils.translation import ugettext as _
-from openedx.core.djangolib.markup import HTML, Text
 from django.conf import settings
 %>
 <%inherit file="main.html" />
@@ -16,11 +14,11 @@ from django.conf import settings
     <hr class="horizontal-divider">
 
     <p>
-      ${Text(_("You have re-enabled forum notification emails from {platform_name}. "
-          "You may {dashboard_link_start}return to your dashboard{link_end}.")).format(
+      ${_("You have re-enabled forum notification emails from {platform_name}. "
+          "You may {dashboard_link_start}return to your dashboard{link_end}.").format(
              platform_name=settings.PLATFORM_NAME,
-             dashboard_link_start=HTML("<a href='{}'>").format(reverse('dashboard')),
-             link_end=HTML("</a>"),)}
+             dashboard_link_start="<a href='{}'>".format(reverse('dashboard')),
+             link_end="</a>",)}
     </p>
   </section>
 </section>

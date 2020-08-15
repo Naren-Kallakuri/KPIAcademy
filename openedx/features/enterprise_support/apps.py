@@ -1,8 +1,6 @@
 """
 Configuration for enterprise_support
 """
-
-
 from django.apps import AppConfig
 
 

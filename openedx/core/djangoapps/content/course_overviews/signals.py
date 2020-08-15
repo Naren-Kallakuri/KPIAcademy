@@ -1,16 +1,13 @@
 """
 Signal handler for invalidating cached course overviews
 """
-
-
 import logging
 
 from django.dispatch import Signal
 from django.dispatch.dispatcher import receiver
 
-from xmodule.modulestore.django import SignalHandler
-
 from .models import CourseOverview
+from xmodule.modulestore.django import SignalHandler
 
 LOG = logging.getLogger(__name__)
 
@@ -25,10 +22,7 @@ def _listen_for_course_publish(sender, course_key, **kwargs):  # pylint: disable
     Catches the signal that a course has been published in Studio and
     updates the corresponding CourseOverview cache entry.
     """
-    try:
-        previous_course_overview = CourseOverview.objects.get(id=course_key)
-    except CourseOverview.DoesNotExist:
-        previous_course_overview = None
+    previous_course_overview = CourseOverview.get_from_ids_if_exists([course_key]).get(course_key)
     updated_course_overview = CourseOverview.load_from_module_store(course_key)
     _check_for_course_changes(previous_course_overview, updated_course_overview)
 
@@ -69,7 +63,7 @@ def _log_start_date_change(previous_course_overview, updated_course_overview):
     new_start_str = 'None'
     if updated_course_overview.start is not None:
         new_start_str = updated_course_overview.start.isoformat()
-    LOG.info(u'Course start date changed: course={0} previous={1} new={2}'.format(
+    LOG.info('Course start date changed: course={0} previous={1} new={2}'.format(
         updated_course_overview.id,
         previous_start_str,
         new_start_str,

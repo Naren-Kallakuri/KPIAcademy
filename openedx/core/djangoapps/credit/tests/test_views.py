@@ -2,38 +2,32 @@
 Tests for credit app views.
 """
 
+from __future__ import unicode_literals
 
 import datetime
 import json
 
 import ddt
 import pytz
-import six
 from django.conf import settings
-from django.test import Client, TestCase
-from django.test.utils import override_settings
 from django.urls import reverse
+from django.test import TestCase, Client
+from django.test.utils import override_settings
 from edx_oauth2_provider.tests.factories import AccessTokenFactory, ClientFactory
 from opaque_keys.edx.keys import CourseKey
 
 from openedx.core.djangoapps.credit.models import (
-    CreditCourse,
-    CreditProvider,
-    CreditRequest,
-    CreditRequirement,
-    CreditRequirementStatus
+    CreditCourse, CreditProvider, CreditRequest, CreditRequirement, CreditRequirementStatus,
 )
-from openedx.core.djangoapps.credit.serializers import CreditEligibilitySerializer, CreditProviderSerializer
+from openedx.core.djangoapps.credit.serializers import CreditProviderSerializer, CreditEligibilitySerializer
 from openedx.core.djangoapps.credit.signature import signature
 from openedx.core.djangoapps.credit.tests.factories import (
-    CreditCourseFactory,
-    CreditEligibilityFactory,
-    CreditProviderFactory,
-    CreditRequestFactory
+    CreditProviderFactory, CreditEligibilityFactory, CreditCourseFactory, CreditRequestFactory,
 )
 from openedx.core.djangoapps.oauth_dispatch.jwt import create_jwt_for_user
 from openedx.core.djangolib.testing.utils import skip_unless_lms
-from student.tests.factories import AdminFactory, UserFactory
+from openedx.core.lib.tests import attr
+from student.tests.factories import UserFactory, AdminFactory
 from util.date_utils import to_timestamp
 
 JSON = 'application/json'
@@ -114,6 +108,7 @@ class ReadOnlyMixin(object):
         self.assertEqual(response.status_code, 405)
 
 
+@attr(shard=2)
 @skip_unless_lms
 class CreditCourseViewSetTests(AuthMixin, UserMixin, TestCase):
     """ Tests for the CreditCourse endpoints.
@@ -127,7 +122,7 @@ class CreditCourseViewSetTests(AuthMixin, UserMixin, TestCase):
         """ Serializes a CreditCourse to a Python dict. """
 
         return {
-            'course_key': six.text_type(credit_course.course_key),
+            'course_key': unicode(credit_course.course_key),
             'enabled': credit_course.enabled
         }
 
@@ -159,7 +154,8 @@ class CreditCourseViewSetTests(AuthMixin, UserMixin, TestCase):
 
         # POSTs without a CSRF token should fail.
         response = client.post(self.path, data=json.dumps(data), content_type=JSON)
-        self.assertContains(response, 'CSRF', status_code=403)
+        self.assertEqual(response.status_code, 403)
+        self.assertIn('CSRF', response.content)
 
         # Retrieve a CSRF token
         response = client.get('/')
@@ -193,14 +189,14 @@ class CreditCourseViewSetTests(AuthMixin, UserMixin, TestCase):
         """ Verify an API request created a new CreditCourse object. """
         enabled = True
         data = {
-            'course_key': six.text_type(course_id),
+            'course_key': unicode(course_id),
             'enabled': enabled
         }
 
         self.assertEqual(response.status_code, 201)
 
         # Verify the API returns the serialized CreditCourse
-        self.assertDictEqual(json.loads(response.content.decode('utf-8')), data)
+        self.assertDictEqual(json.loads(response.content), data)
 
         # Verify the CreditCourse was actually created
         course_key = CourseKey.from_string(course_id)
@@ -211,7 +207,7 @@ class CreditCourseViewSetTests(AuthMixin, UserMixin, TestCase):
         course_id = 'a/b/c'
         enabled = True
         data = {
-            'course_key': six.text_type(course_id),
+            'course_key': unicode(course_id),
             'enabled': enabled
         }
 
@@ -223,7 +219,7 @@ class CreditCourseViewSetTests(AuthMixin, UserMixin, TestCase):
         course_id = 'd/e/f'
         enabled = True
         data = {
-            'course_key': six.text_type(course_id),
+            'course_key': unicode(course_id),
             'enabled': enabled
         }
 
@@ -241,7 +237,7 @@ class CreditCourseViewSetTests(AuthMixin, UserMixin, TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Verify the API returns the serialized CreditCourse
-        self.assertDictEqual(json.loads(response.content.decode('utf-8')), self._serialize_credit_course(cc1))
+        self.assertDictEqual(json.loads(response.content), self._serialize_credit_course(cc1))
 
     def test_list(self):
         """ Verify the endpoint supports listing all CreditCourse objects. """
@@ -253,7 +249,7 @@ class CreditCourseViewSetTests(AuthMixin, UserMixin, TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Verify the API returns a list of serialized CreditCourse objects
-        self.assertListEqual(json.loads(response.content.decode('utf-8')), expected)
+        self.assertListEqual(json.loads(response.content), expected)
 
     def test_update(self):
         """ Verify the endpoint supports updating a CreditCourse object. """
@@ -267,13 +263,14 @@ class CreditCourseViewSetTests(AuthMixin, UserMixin, TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Verify the serialized CreditCourse is returned
-        self.assertDictEqual(json.loads(response.content.decode('utf-8')), data)
+        self.assertDictEqual(json.loads(response.content), data)
 
         # Verify the data was persisted
         credit_course = CreditCourse.objects.get(course_key=credit_course.course_key)
         self.assertTrue(credit_course.enabled)
 
 
+@attr(shard=2)
 @ddt.ddt
 @skip_unless_lms
 class CreditProviderViewSetTests(ApiTestCaseMixin, ReadOnlyMixin, AuthMixin, UserMixin, TestCase):
@@ -318,6 +315,7 @@ class CreditProviderViewSetTests(ApiTestCaseMixin, ReadOnlyMixin, AuthMixin, Use
         self.assertEqual(response.data, CreditProviderSerializer(self.bayside).data)
 
 
+@attr(shard=2)
 @skip_unless_lms
 class CreditProviderRequestCreateViewTests(ApiTestCaseMixin, UserMixin, TestCase):
     """ Tests for CreditProviderRequestCreateView. """
@@ -336,7 +334,7 @@ class CreditProviderRequestCreateViewTests(ApiTestCaseMixin, UserMixin, TestCase
         """ Create a credit request for the given user and course. """
         data = {
             'username': username,
-            'course_key': six.text_type(course_id)
+            'course_key': unicode(course_id)
         }
         return self.client.post(self.path, json.dumps(data), content_type=JSON)
 
@@ -376,7 +374,7 @@ class CreditProviderRequestCreateViewTests(ApiTestCaseMixin, UserMixin, TestCase
         self.assertEqual(request.status, 'pending')
 
         # Check request parameters
-        content = json.loads(response.content.decode('utf-8'))
+        content = json.loads(response.content)
         parameters = content['parameters']
 
         self.assertEqual(content['url'], self.provider.provider_url)
@@ -385,7 +383,7 @@ class CreditProviderRequestCreateViewTests(ApiTestCaseMixin, UserMixin, TestCase
         self.assertEqual(parameters['course_org'], course_key.org)
         self.assertEqual(parameters['course_num'], course_key.course)
         self.assertEqual(parameters['course_run'], course_key.run)
-        self.assertEqual(parameters['final_grade'], six.text_type(final_grade))
+        self.assertEqual(parameters['final_grade'], unicode(final_grade))
         self.assertEqual(parameters['user_username'], username)
         self.assertEqual(parameters['user_full_name'], self.user.get_full_name())
         self.assertEqual(parameters['user_mailing_address'], '')
@@ -466,6 +464,7 @@ class CreditProviderRequestCreateViewTests(ApiTestCaseMixin, UserMixin, TestCase
         self.assertEqual(response.status_code, 400)
 
 
+@attr(shard=2)
 @ddt.ddt
 @skip_unless_lms
 class CreditProviderCallbackViewTests(UserMixin, TestCase):
@@ -623,6 +622,7 @@ class CreditProviderCallbackViewTests(UserMixin, TestCase):
             self.assertEqual(response.status_code, 403)
 
 
+@attr(shard=2)
 @ddt.ddt
 @skip_unless_lms
 class CreditEligibilityViewTests(AuthMixin, UserMixin, ReadOnlyMixin, TestCase):

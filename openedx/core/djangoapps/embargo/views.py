@@ -1,6 +1,5 @@
 """Views served by the embargo app. """
 
-
 from django.contrib.auth.models import User
 from django.http import Http404
 from django.views.generic.base import View

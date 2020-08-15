@@ -3,18 +3,16 @@ Middleware for user api.
 Adds user's tags to tracking event context.
 """
 
-from django.utils.deprecation import MiddlewareMixin
-
-from eventtracking import tracker
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
 
+from eventtracking import tracker
 from track.contexts import COURSE_REGEX
 
 from .models import UserCourseTag
 
 
-class UserTagsEventContextMiddleware(MiddlewareMixin):
+class UserTagsEventContextMiddleware(object):
     """Middleware that adds a user's tags to tracking event context."""
     CONTEXT_NAME = 'user_tags_context'
 

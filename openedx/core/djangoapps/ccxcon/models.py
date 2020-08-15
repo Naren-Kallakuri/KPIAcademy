@@ -2,18 +2,14 @@
 Models for the ccxcon
 """
 
-
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 
 
-@python_2_unicode_compatible
 class CCXCon(models.Model):
     """
-    Definition of the CCXCon model.
-    Stores the url and the oauth key to access the REST APIs on the CCX Connector.
-
-    .. no_pii:
+    The definition of the CCXCon model.
+    This will store the url and the oauth key to access the REST APIs
+    on the CCX Connector.
     """
     url = models.URLField(unique=True, db_index=True)
     oauth_client_id = models.CharField(max_length=255)
@@ -30,3 +26,6 @@ class CCXCon(models.Model):
 
     def __str__(self):
         return self.title
+
+    def __unicode__(self):
+        return unicode(self.__str__())

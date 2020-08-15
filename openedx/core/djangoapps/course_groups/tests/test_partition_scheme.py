@@ -2,28 +2,27 @@
 Test the partitions and partitions service
 
 """
-
-
 import django.test
 from mock import patch
-from six.moves import range
 
-from lms.djangoapps.courseware.tests.test_masquerade import StaffMasqueradeTestCase
+from courseware.tests.test_masquerade import StaffMasqueradeTestCase
+from student.tests.factories import UserFactory
+from xmodule.partitions.partitions import Group, UserPartition, UserPartitionError
+from xmodule.modulestore.django import modulestore
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase, TEST_DATA_MIXED_MODULESTORE
+from xmodule.modulestore.tests.factories import ToyCourseFactory
+
 from openedx.core.djangoapps.user_api.partition_schemes import RandomUserPartitionScheme
 from openedx.core.djangolib.testing.utils import skip_unless_lms
-from student.tests.factories import UserFactory
-from xmodule.modulestore.django import modulestore
-from xmodule.modulestore.tests.django_utils import TEST_DATA_MIXED_MODULESTORE, ModuleStoreTestCase
-from xmodule.modulestore.tests.factories import ToyCourseFactory
-from xmodule.partitions.partitions import Group, UserPartition, UserPartitionError
-
-from ..cohorts import add_user_to_cohort, get_course_cohorts, remove_user_from_cohort
-from ..models import CourseUserGroupPartitionGroup
+from openedx.core.lib.tests import attr
 from ..partition_scheme import CohortPartitionScheme, get_cohorted_user_partition
+from ..models import CourseUserGroupPartitionGroup
 from ..views import link_cohort_to_partition_group, unlink_cohort_partition_group
+from ..cohorts import add_user_to_cohort, remove_user_from_cohort, get_course_cohorts
 from .helpers import CohortFactory, config_course_cohorts
 
 
+@attr(shard=2)
 class TestCohortPartitionScheme(ModuleStoreTestCase):
     """
     Test the logic for linking a user to a partition group based on their cohort.
@@ -229,7 +228,7 @@ class TestCohortPartitionScheme(ModuleStoreTestCase):
         with patch('openedx.core.djangoapps.course_groups.partition_scheme.log') as mock_log:
             self.assert_student_in_group(None, new_user_partition)
             self.assertTrue(mock_log.warn.called)
-            self.assertRegex(mock_log.warn.call_args[0][0], 'group not found')
+            self.assertRegexpMatches(mock_log.warn.call_args[0][0], 'group not found')
 
     def test_missing_partition(self):
         """
@@ -254,9 +253,10 @@ class TestCohortPartitionScheme(ModuleStoreTestCase):
         with patch('openedx.core.djangoapps.course_groups.partition_scheme.log') as mock_log:
             self.assert_student_in_group(None, new_user_partition)
             self.assertTrue(mock_log.warn.called)
-            self.assertRegex(mock_log.warn.call_args[0][0], 'partition mismatch')
+            self.assertRegexpMatches(mock_log.warn.call_args[0][0], 'partition mismatch')
 
 
+@attr(shard=2)
 class TestExtension(django.test.TestCase):
     """
     Ensure that the scheme extension is correctly plugged in (via entry point
@@ -265,10 +265,11 @@ class TestExtension(django.test.TestCase):
 
     def test_get_scheme(self):
         self.assertEqual(UserPartition.get_scheme('cohort'), CohortPartitionScheme)
-        with self.assertRaisesRegex(UserPartitionError, 'Unrecognized scheme'):
+        with self.assertRaisesRegexp(UserPartitionError, 'Unrecognized scheme'):
             UserPartition.get_scheme('other')
 
 
+@attr(shard=2)
 class TestGetCohortedUserPartition(ModuleStoreTestCase):
     """
     Test that `get_cohorted_user_partition` returns the first user_partition with scheme `CohortPartitionScheme`.
@@ -326,6 +327,7 @@ class TestGetCohortedUserPartition(ModuleStoreTestCase):
         self.assertIsNone(get_cohorted_user_partition(self.course))
 
 
+@attr(shard=2)
 class TestMasqueradedGroup(StaffMasqueradeTestCase):
     """
     Check for staff being able to masquerade as belonging to a group.

@@ -1,15 +1,11 @@
 """
 Image file manipulation functions related to profile images.
 """
-
-
-import binascii
 from collections import namedtuple
 from contextlib import closing
-from io import BytesIO
+from cStringIO import StringIO
 
 import piexif
-import six
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.utils.translation import ugettext as _
@@ -110,7 +106,7 @@ def validate_uploaded_image(uploaded_file):
         raise ImageValidationError(file_upload_too_small)
 
     # check the file extension looks acceptable
-    filename = six.text_type(uploaded_file.name).lower()
+    filename = unicode(uploaded_file.name).lower()
     filetype = [ft for ft in IMAGE_TYPES if any(filename.endswith(ext) for ext in IMAGE_TYPES[ft].extensions)]
     if not filetype:
         file_upload_bad_type = _(
@@ -129,7 +125,7 @@ def validate_uploaded_image(uploaded_file):
 
     # check magic number matches expected file type
     headers = IMAGE_TYPES[filetype].magic
-    if binascii.hexlify(uploaded_file.read(len(headers[0]) // 2)).decode('utf-8') not in headers:
+    if uploaded_file.read(len(headers[0]) / 2).encode('hex') not in headers:
         file_upload_bad_ext = _(
             u'The file name extension for this file does not match '
             u'the file data. The file may be corrupted.'
@@ -178,7 +174,7 @@ def _create_image_file(image, exif):
     Note that the file object returned is a django ContentFile which holds data
     in memory (not on disk).
     """
-    string_io = BytesIO()
+    string_io = StringIO()
 
     # The if/else dance below is required, because PIL raises an exception if
     # you pass None as the value of the exif kwarg.
@@ -243,6 +239,6 @@ def _user_friendly_size(size):
     units = [_('bytes'), _('KB'), _('MB')]
     i = 0
     while size >= 1024 and i < len(units):
-        size //= 1024
+        size /= 1024
         i += 1
     return u'{} {}'.format(size, units[i])

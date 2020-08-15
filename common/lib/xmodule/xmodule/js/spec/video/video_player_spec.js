@@ -56,7 +56,7 @@ function(VideoPlayer, HLS, _) {
 
                 it('create video caption', function() {
                     expect(state.videoCaption).toBeDefined();
-                    expect(state.speed).toEqual(1.5);
+                    expect(state.speed).toEqual('1.50');
                     expect(state.config.transcriptTranslationUrl)
                         .toEqual('/transcript/translation/__lang__');
                 });
@@ -64,7 +64,7 @@ function(VideoPlayer, HLS, _) {
                 it('create video speed control', function() {
                     expect(state.videoSpeedControl).toBeDefined();
                     expect(state.videoSpeedControl.el).toHaveClass('speeds');
-                    expect(state.speed).toEqual(1.5);
+                    expect(state.speed).toEqual('1.50');
                 });
 
                 it('create video progress slider', function() {
@@ -714,7 +714,6 @@ function(VideoPlayer, HLS, _) {
             describe('when the video player is not full screen', function() {
                 beforeEach(function() {
                     state = jasmine.initializePlayer();
-                    jasmine.mockFullscreenAPI();
                     state.videoEl = $('video, iframe');
                     spyOn($.fn, 'trigger').and.callThrough();
                     $('.add-fullscreen').click();
@@ -734,10 +733,12 @@ function(VideoPlayer, HLS, _) {
             describe('when the video player already full screen', function() {
                 beforeEach(function() {
                     state = jasmine.initializePlayer();
-                    jasmine.mockFullscreenAPI();
                     state.videoEl = $('video, iframe');
                     spyOn($.fn, 'trigger').and.callThrough();
-                    state.videoFullScreen.enter();
+                    state.el.addClass('video-fullscreen');
+                    state.videoFullScreen.fullScreenState = true;
+                    state.videoFullScreen.isFullScreen = true;
+                    state.videoFullScreen.fullScreenEl.attr('title', 'Exit-fullscreen');
                     $('.add-fullscreen').click();
                 });
 

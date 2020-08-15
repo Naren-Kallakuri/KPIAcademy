@@ -1,20 +1,19 @@
 """
 Tests for logout
 """
-
-
 import unittest
 
 import ddt
-import six.moves.urllib.parse as parse  # pylint: disable=import-error
 from django.conf import settings
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
-from edx_oauth2_provider.constants import AUTHORIZED_CLIENTS_SESSION_KEY
-from edx_oauth2_provider.tests.factories import ClientFactory, TrustedClientFactory
 from mock import patch
-
+from edx_oauth2_provider.constants import AUTHORIZED_CLIENTS_SESSION_KEY
+from edx_oauth2_provider.tests.factories import (
+    ClientFactory,
+    TrustedClientFactory
+)
 from student.tests.factories import UserFactory
 
 
@@ -62,15 +61,9 @@ class LogoutTests(TestCase):
         self.assertListEqual(self.client.session[AUTHORIZED_CLIENTS_SESSION_KEY], [oauth_client.client_id])
 
     @ddt.data(
-        ('%2Fcourses', 'testserver'),
-        ('https%3A%2F%2Fedx.org%2Fcourses', 'edx.org'),
-        ('https%3A%2F%2Ftest.edx.org%2Fcourses', 'edx.org'),
-        ('/courses/course-v1:ARTS+D1+2018_T/course/', 'edx.org'),
-        ('%2Fcourses%2Fcourse-v1%3AARTS%2BD1%2B2018_T%2Fcourse%2F', 'edx.org'),
-        ('/courses/course-v1:ARTS+D1+2018_T/course/?q=computer+science', 'edx.org'),
-        ('%2Fcourses%2Fcourse-v1%3AARTS%2BD1%2B2018_T%2Fcourse%2F%3Fq%3Dcomputer+science', 'edx.org'),
-        ('/enterprise/c5dad9a7-741c-4841-868f-850aca3ff848/course/Microsoft+DAT206x/enroll/', 'edx.org'),
-        ('%2Fenterprise%2Fc5dad9a7-741c-4841-868f-850aca3ff848%2Fcourse%2FMicrosoft%2BDAT206x%2Fenroll%2F', 'edx.org'),
+        ('/courses', 'testserver'),
+        ('https://edx.org/courses', 'edx.org'),
+        ('https://test.edx.org/courses', 'edx.org'),
     )
     @ddt.unpack
     @override_settings(LOGIN_REDIRECT_WHITELIST=['test.edx.org'])
@@ -81,7 +74,7 @@ class LogoutTests(TestCase):
         )
         response = self.client.get(url, HTTP_HOST=host)
         expected = {
-            'target': parse.unquote(redirect_url),
+            'target': redirect_url,
         }
         self.assertDictContainsSubset(expected, response.context_data)
 

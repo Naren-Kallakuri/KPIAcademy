@@ -1,19 +1,14 @@
-"""
-Base file for testing schedules with upsell
-"""
-
-
-import datetime
-import itertools
 from collections import namedtuple
-
+import datetime
 import ddt
-from edx_ace.message import Message
-from edx_ace.utils.date import serialize
 from freezegun import freeze_time
-from mock import PropertyMock, patch
+from mock import patch, PropertyMock
+import itertools
 
-from lms.djangoapps.courseware.models import DynamicUpgradeDeadlineConfiguration
+from edx_ace.utils.date import serialize
+from edx_ace.message import Message
+
+from courseware.models import DynamicUpgradeDeadlineConfiguration
 
 
 @ddt.ddt

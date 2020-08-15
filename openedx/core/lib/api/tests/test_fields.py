@@ -1,5 +1,4 @@
 """ Tests for custom DRF fields. """
-
 import ddt
 from django.test import TestCase
 

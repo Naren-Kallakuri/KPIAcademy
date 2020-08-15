@@ -1,14 +1,10 @@
 """
 Tests for the course updates page.
 """
-
-
 from datetime import datetime
 
-import six
+from courseware.courses import get_course_info_usage_key
 from django.urls import reverse
-
-from lms.djangoapps.courseware.courses import get_course_info_usage_key
 from openedx.core.djangoapps.waffle_utils.testutils import WAFFLE_TABLES
 from openedx.features.content_type_gating.models import ContentTypeGatingConfig
 from openedx.features.course_experience.views.course_updates import STATUS_VISIBLE
@@ -32,7 +28,7 @@ def course_updates_url(course):
     return reverse(
         'openedx.course_experience.course_updates',
         kwargs={
-            'course_id': six.text_type(course.id),
+            'course_id': unicode(course.id),
         }
     )
 
@@ -134,7 +130,7 @@ class TestCourseUpdatesPage(SharedModuleStoreTestCase):
 
         # Fetch the view and verify that the query counts haven't changed
         # TODO: decrease query count as part of REVO-28
-        with self.assertNumQueries(51, table_blacklist=QUERY_COUNT_TABLE_BLACKLIST):
+        with self.assertNumQueries(53, table_blacklist=QUERY_COUNT_TABLE_BLACKLIST):
             with check_mongo_calls(4):
                 url = course_updates_url(self.course)
                 self.client.get(url)

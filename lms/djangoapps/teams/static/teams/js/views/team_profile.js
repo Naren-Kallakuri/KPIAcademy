@@ -31,7 +31,6 @@
 
                     this.countries = TeamUtils.selectorOptionsArrayToHashWithBlank(this.context.countries);
                     this.languages = TeamUtils.selectorOptionsArrayToHashWithBlank(this.context.languages);
-                    this.topic = options.topic;
 
                     this.listenTo(this.model, 'change', this.render);
                 },
@@ -39,11 +38,7 @@
                 render: function() {
                     var memberships = this.model.get('membership'),
                         discussionTopicID = this.model.get('discussion_topic_id'),
-                        isMember = TeamUtils.isUserMemberOfTeam(memberships, this.context.userInfo.username),
-                        isAdminOrStaff = this.context.userInfo.privileged || this.context.userInfo.staff,
-                        isInstructorManagedTopic = TeamUtils.isInstructorManagedTopic(this.topic.attributes.type);
-
-                    var showLeaveLink = isMember && (isAdminOrStaff || !isInstructorManagedTopic);
+                        isMember = TeamUtils.isUserMemberOfTeam(memberships, this.context.userInfo.username);
 
                     HtmlUtils.setHtml(
                         this.$el,
@@ -55,7 +50,6 @@
                             language: this.languages[this.model.get('language')],
                             membershipText: TeamUtils.teamCapacityText(memberships.length, this.context.maxTeamSize),
                             isMember: isMember,
-                            showLeaveLink: showLeaveLink,
                             hasCapacity: memberships.length < this.context.maxTeamSize,
                             hasMembers: memberships.length >= 1
                         })
@@ -93,17 +87,16 @@
 
                 leaveTeam: function(event) {
                     event.preventDefault();
-                    var view = this; // eslint-disable-line vars-on-top
+                    var view = this;
                     ViewUtils.confirmThenRunOperation(
                         gettext('Leave this team?'),
-                        gettext("If you leave, you can no longer post in this team's discussions." +
-                            'Your place will be available to another learner.'),
+                        gettext("If you leave, you can no longer post in this team's discussions. Your place will be available to another learner."),
                         gettext('Confirm'),
                         function() {
                             $.ajax({
                                 type: 'DELETE',
                                 url: view.context.teamMembershipDetailUrl.replace('team_id', view.model.get('id'))
-                            }).done(function() {
+                            }).done(function(data) {
                                 view.model.fetch()
                                     .done(function() {
                                         view.teamEvents.trigger('teams:update', {

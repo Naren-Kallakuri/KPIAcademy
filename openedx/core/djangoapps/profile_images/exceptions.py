@@ -1,8 +1,6 @@
 """
 Exceptions related to the handling of profile images.
 """
-
-
 from six import text_type
 
 

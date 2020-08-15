@@ -1,15 +1,15 @@
 """
 Tests for xblock_utils.py
 """
-
+from __future__ import absolute_import, unicode_literals
 
 import uuid
 
 import ddt
-from django.conf import settings
 from django.test.client import RequestFactory
 from mock import patch
 from web_fragments.fragment import Fragment
+from six import text_type
 
 from opaque_keys.edx.asides import AsideUsageKeyV1, AsideUsageKeyV2
 from openedx.core.lib.url_utils import quote_slashes
@@ -30,7 +30,6 @@ from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.tests.django_utils import SharedModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from xmodule.modulestore.tests.test_asides import AsideTestType
-import six
 
 
 @ddt.ddt
@@ -38,6 +37,7 @@ class TestXblockUtils(SharedModuleStoreTestCase):
     """
     Tests for xblock utility functions.
     """
+    shard = 2
 
     @classmethod
     def setUpClass(cls):
@@ -107,8 +107,8 @@ class TestXblockUtils(SharedModuleStoreTestCase):
             view='baseview',
             frag=fragment,
             context={"wrap_xblock_data": {"custom-attribute": "custom-value"}},
-            usage_id_serializer=lambda usage_id: quote_slashes(six.text_type(usage_id)),
-            request_token=uuid.uuid1().hex
+            usage_id_serializer=lambda usage_id: quote_slashes(unicode(usage_id)),
+            request_token=uuid.uuid1().get_hex()
         )
         self.assertIsInstance(test_wrap_output, Fragment)
         self.assertIn('xblock-baseview', test_wrap_output.content)
@@ -195,15 +195,13 @@ class TestXblockUtils(SharedModuleStoreTestCase):
         """
         Verify that `get_css_dependencies` returns correct list of files.
         """
-        pipeline = settings.PIPELINE.copy()
-        pipeline['PIPELINE_ENABLED'] = pipeline_enabled
-        pipeline['STYLESHEETS'] = {
+        pipeline_css = {
             'style-group': {
                 'source_filenames': ["a.css", "b.css", "c.css"],
                 'output_filename': "combined.css"
             }
         }
-        with self.settings(PIPELINE=pipeline):
+        with self.settings(PIPELINE_ENABLED=pipeline_enabled, PIPELINE_CSS=pipeline_css):
             css_dependencies = get_css_dependencies("style-group")
             self.assertEqual(css_dependencies, expected_css_dependencies)
 
@@ -216,15 +214,13 @@ class TestXblockUtils(SharedModuleStoreTestCase):
         """
         Verify that `get_js_dependencies` returns correct list of files.
         """
-        pipeline = settings.PIPELINE.copy()
-        pipeline['PIPELINE_ENABLED'] = pipeline_enabled
-        pipeline['JAVASCRIPT'] = {
+        pipeline_js = {
             'js-group': {
                 'source_filenames': ["a.js", "b.js", "c.js"],
                 'output_filename': "combined.js"
             }
         }
-        with self.settings(PIPELINE=pipeline):
+        with self.settings(PIPELINE_ENABLED=pipeline_enabled, PIPELINE_JS=pipeline_js):
             js_dependencies = get_js_dependencies("js-group")
             self.assertEqual(js_dependencies, expected_js_dependencies)
 
@@ -253,4 +249,4 @@ class TestXBlockAside(SharedModuleStoreTestCase):
     @XBlockAside.register_temp_plugin(AsideTestType, 'test_aside')
     def test_get_aside(self):
         """test get aside success"""
-        assert get_aside_from_xblock(self.block, six.text_type("test_aside")) is not None
+        assert get_aside_from_xblock(self.block, text_type("test_aside")) is not None

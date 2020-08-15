@@ -1,11 +1,9 @@
 """
 Helpers for API tests.
 """
-
 import base64
 import json
 import re
-import six
 
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -23,7 +21,7 @@ class ApiTestCase(TestCase):
         """
         Returns a dictionary containing the http auth header with encoded username+password
         """
-        return {'HTTP_AUTHORIZATION': b'Basic ' + base64.b64encode(b'%s:%s' % (username.encode(), password.encode()))}
+        return {'HTTP_AUTHORIZATION': 'Basic ' + base64.b64encode('%s:%s' % (username, password))}
 
     def request_with_auth(self, method, *args, **kwargs):
         """Issue a request to the given URI with the API key header"""
@@ -41,7 +39,7 @@ class ApiTestCase(TestCase):
         resp = self.request_with_auth("get", *args, **kwargs)
         self.assertHttpOK(resp)
         self.assertTrue(resp["Content-Type"].startswith("application/json"))
-        return json.loads(resp.content.decode('utf-8'))
+        return json.loads(resp.content)
 
     def assertAllowedMethods(self, uri, expected_methods):
         """Assert that the allowed methods for the given URI match the expected list"""
@@ -50,7 +48,7 @@ class ApiTestCase(TestCase):
         allow_header = resp.get("Allow")
         self.assertIsNotNone(allow_header)
         allowed_methods = re.split('[^A-Z]+', allow_header)
-        six.assertCountEqual(self, allowed_methods, expected_methods)
+        self.assertItemsEqual(allowed_methods, expected_methods)
 
     def assertSelfReferential(self, obj):
         """Assert that accessing the "url" entry in the given object returns the same object"""
@@ -86,6 +84,6 @@ class ApiTestCase(TestCase):
         # Django rest framework interprets basic auth headers
         # as an attempt to authenticate with the API.
         # We don't want this for views available to anonymous users.
-        basic_auth_header = "Basic " + base64.b64encode('username:password'.encode('utf-8')).decode('utf-8')
+        basic_auth_header = "Basic " + base64.b64encode('username:password')
         response = getattr(self.client, method)(uri, HTTP_AUTHORIZATION=basic_auth_header)
         self.assertNotEqual(response.status_code, 403)

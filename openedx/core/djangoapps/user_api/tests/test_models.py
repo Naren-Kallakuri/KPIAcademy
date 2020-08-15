@@ -1,19 +1,17 @@
 """
 Test UserPreferenceModel and UserPreference events
 """
-
-
 from django.db import IntegrityError
 from django.test import TestCase
 
 from student.tests.factories import UserFactory
 from student.tests.tests import UserSettingsEventTestMixin
-from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 
-from ..models import UserOrgTag, UserPreference
+from ..tests.factories import UserPreferenceFactory, UserCourseTagFactory, UserOrgTagFactory
+from ..models import UserPreference, UserOrgTag
 from ..preferences.api import set_user_preference
-from ..tests.factories import UserCourseTagFactory, UserOrgTagFactory, UserPreferenceFactory
 
 
 class UserPreferenceModelTest(ModuleStoreTestCase):
@@ -35,7 +33,7 @@ class UserPreferenceModelTest(ModuleStoreTestCase):
         user = UserFactory.create()
         self._create_and_assert(user=user, key="testkey0", value="")
         self._create_and_assert(user=user, key="testkey1", value="This is some English text!")
-        self._create_and_assert(user=user, key="testkey2", value='{"some": "json"}')
+        self._create_and_assert(user=user, key="testkey2", value="{'some': 'json'}")
         self._create_and_assert(
             user=user,
             key="testkey3",
@@ -55,20 +53,20 @@ class UserPreferenceModelTest(ModuleStoreTestCase):
         user = UserFactory.create()
         course = CourseFactory.create()
         tag = UserCourseTagFactory.create(user=user, course_id=course.id, key="testkey", value="foobar")
-        self.assertEqual(tag.user, user)
-        self.assertEqual(tag.course_id, course.id)
-        self.assertEqual(tag.key, "testkey")
-        self.assertEqual(tag.value, "foobar")
+        self.assertEquals(tag.user, user)
+        self.assertEquals(tag.course_id, course.id)
+        self.assertEquals(tag.key, "testkey")
+        self.assertEquals(tag.value, "foobar")
 
     def test_create_user_org_tags(self):
         """Create org specific user tags and confirm all properties are set """
         user = UserFactory.create()
         course = CourseFactory.create()
         tag = UserOrgTagFactory.create(user=user, org=course.id.org, key="testkey", value="foobar")
-        self.assertEqual(tag.user, user)
-        self.assertEqual(tag.org, course.id.org)
-        self.assertEqual(tag.key, "testkey")
-        self.assertEqual(tag.value, "foobar")
+        self.assertEquals(tag.user, user)
+        self.assertEquals(tag.org, course.id.org)
+        self.assertEquals(tag.key, "testkey")
+        self.assertEquals(tag.value, "foobar")
         self.assertIsNotNone(tag.created)
         self.assertIsNotNone(tag.modified)
 
@@ -76,7 +74,7 @@ class UserPreferenceModelTest(ModuleStoreTestCase):
         original_modified = tag.modified
         tag.value = "barfoo"
         tag.save()
-        self.assertEqual(tag.value, "barfoo")
+        self.assertEquals(tag.value, "barfoo")
         self.assertNotEqual(original_modified, tag.modified)
 
     def test_retire_user_org_tags_by_user_value(self):

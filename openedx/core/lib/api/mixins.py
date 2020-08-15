@@ -1,7 +1,6 @@
 """
 Django Rest Framework view mixins.
 """
-
 from django.core.exceptions import ValidationError
 from django.http import Http404
 from rest_framework import status

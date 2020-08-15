@@ -1,16 +1,11 @@
-# pylint: disable=unicode-format-string
 """
 Classes used for defining and running pytest test suites
 """
-
-
 import os
 from glob import glob
-
-from pavelib.utils.envs import Env
 from pavelib.utils.test import utils as test_utils
 from pavelib.utils.test.suites.suite import TestSuite
-from pavelib.utils.test.utils import COVERAGE_CACHE_BASELINE, COVERAGE_CACHE_BASEPATH, WHO_TESTS_WHAT_DIFF
+from pavelib.utils.envs import Env
 
 __test__ = False  # do not collect
 
@@ -30,7 +25,6 @@ class PytestSuite(TestSuite):
             self.django_toxenv = None
         else:
             self.django_toxenv = 'py27-django{}'.format(django_version.replace('.', ''))
-        self.disable_courseenrollment_history = kwargs.get('disable_courseenrollment_history', '1')
         self.disable_capture = kwargs.get('disable_capture', None)
         self.report_dir = Env.REPORT_DIR / self.root
 
@@ -41,14 +35,9 @@ class PytestSuite(TestSuite):
         if os.environ.get("SHARD", None):
             shard_str = "shard_{}".format(os.environ.get("SHARD"))
             self.report_dir = self.report_dir / shard_str
-
-        if self.disable_courseenrollment_history:
-            os.environ['DISABLE_COURSEENROLLMENT_HISTORY'] = '1'
-
         self.xunit_report = self.report_dir / "nosetests.xml"
 
         self.cov_args = kwargs.get('cov_args', '')
-        self.with_wtw = kwargs.get('with_wtw', False)
 
     def __enter__(self):
         super(PytestSuite, self).__enter__()
@@ -105,14 +94,6 @@ class PytestSuite(TestSuite):
 
         if self.fail_fast or env_fail_fast_set:
             opts.append("--exitfirst")
-
-        if self.with_wtw:
-            opts.extend([
-                '--wtw',
-                '{}/{}'.format(COVERAGE_CACHE_BASEPATH, WHO_TESTS_WHAT_DIFF),
-                '--wtwdb',
-                '{}/{}'.format(COVERAGE_CACHE_BASEPATH, COVERAGE_CACHE_BASELINE)
-            ])
 
         return opts
 
@@ -179,29 +160,28 @@ class SystemTestSuite(PytestSuite):
             else:
                 xdist_remote_processes = self.processes
             for ip in self.xdist_ip_addresses.split(','):
-                # Propogate necessary env vars to xdist containers
-                env_var_cmd = u'export DJANGO_SETTINGS_MODULE={} DISABLE_COURSEENROLLMENT_HISTORY={} PYTHONHASHSEED=0'\
-                    .format('{}.envs.{}'.format(self.root, self.settings),
-                            self.disable_courseenrollment_history)
-                xdist_string = u'--tx {}*ssh="jenkins@{} -o StrictHostKeyChecking=no"' \
-                               '//python="source edx-venv-{}/edx-venv/bin/activate; {}; python"' \
-                               '//chdir="edx-platform"' \
-                               .format(xdist_remote_processes, ip, Env.PYTHON_VERSION, env_var_cmd)
+                # The django settings runtime command does not propagate to xdist remote workers
+                django_env_var_cmd = 'export DJANGO_SETTINGS_MODULE={}' \
+                                     .format('{}.envs.{}'.format(self.root, self.settings))
+                xdist_string = '--tx {}*ssh="ubuntu@{} -o StrictHostKeyChecking=no"' \
+                               '//python="source /edx/app/edxapp/edxapp_env; {}; python"' \
+                               '//chdir="/edx/app/edxapp/edx-platform"' \
+                               .format(xdist_remote_processes, ip, django_env_var_cmd)
                 cmd.append(xdist_string)
             for rsync_dir in Env.rsync_dirs():
-                cmd.append(u'--rsyncdir {}'.format(rsync_dir))
+                cmd.append('--rsyncdir {}'.format(rsync_dir))
         else:
             if self.processes == -1:
                 cmd.append('-n auto')
                 cmd.append('--dist=loadscope')
             elif self.processes != 0:
-                cmd.append(u'-n {}'.format(self.processes))
+                cmd.append('-n {}'.format(self.processes))
                 cmd.append('--dist=loadscope')
 
         if not self.randomize:
             cmd.append('-p no:randomly')
         if self.eval_attr:
-            cmd.append(u"-a '{}'".format(self.eval_attr))
+            cmd.append("-a '{}'".format(self.eval_attr))
 
         cmd.extend(self.passthrough_options)
         cmd.append(self.test_id)
@@ -233,7 +213,6 @@ class SystemTestSuite(PytestSuite):
         if self.root == 'lms':
             default_test_globs.append("{system}/tests.py".format(system=self.root))
             default_test_globs.append("openedx/core/djangolib/*")
-            default_test_globs.append("openedx/core/tests/*")
             default_test_globs.append("openedx/features")
 
         def included(path):
@@ -300,40 +279,30 @@ class LibTestSuite(PytestSuite):
             else:
                 xdist_remote_processes = self.processes
             for ip in self.xdist_ip_addresses.split(','):
-                # Propogate necessary env vars to xdist containers
+                # The django settings runtime command does not propagate to xdist remote workers
                 if 'pavelib/paver_tests' in self.test_id:
                     django_env_var_cmd = "export DJANGO_SETTINGS_MODULE='lms.envs.test'"
                 else:
                     django_env_var_cmd = "export DJANGO_SETTINGS_MODULE='openedx.tests.settings'"
-
-                env_var_cmd = u'{} DISABLE_COURSEENROLLMENT_HISTORY={}' \
-                    .format(django_env_var_cmd, self.disable_courseenrollment_history)
-
-                xdist_string = u'--tx {}*ssh="jenkins@{} -o StrictHostKeyChecking=no"' \
-                               '//python="source edx-venv-{}/edx-venv/bin/activate; {}; python"' \
-                               '//chdir="edx-platform"' \
-                               .format(xdist_remote_processes, ip, Env.PYTHON_VERSION, env_var_cmd)
+                xdist_string = '--tx {}*ssh="ubuntu@{} -o StrictHostKeyChecking=no"' \
+                               '//python="source /edx/app/edxapp/edxapp_env; {}; python"' \
+                               '//chdir="/edx/app/edxapp/edx-platform"' \
+                               .format(xdist_remote_processes, ip, django_env_var_cmd)
                 cmd.append(xdist_string)
             for rsync_dir in Env.rsync_dirs():
-                cmd.append(u'--rsyncdir {}'.format(rsync_dir))
-            # "--rsyncdir" throws off the configuration root, set it explicitly
-            if 'common/lib' in self.test_id:
-                cmd.append('--rootdir=common/lib')
-                cmd.append('-c common/lib/pytest.ini')
-            elif 'pavelib/paver_tests' in self.test_id:
-                cmd.append('--rootdir=pavelib/paver_tests')
+                cmd.append('--rsyncdir {}'.format(rsync_dir))
         else:
             if self.processes == -1:
                 cmd.append('-n auto')
                 cmd.append('--dist=loadscope')
             elif self.processes != 0:
-                cmd.append(u'-n {}'.format(self.processes))
+                cmd.append('-n {}'.format(self.processes))
                 cmd.append('--dist=loadscope')
 
         if not self.randomize:
             cmd.append("-p no:randomly")
         if self.eval_attr:
-            cmd.append(u"-a '{}'".format(self.eval_attr))
+            cmd.append("-a '{}'".format(self.eval_attr))
 
         cmd.append(self.test_id)
 

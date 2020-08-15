@@ -1,6 +1,5 @@
 """ Common Authentication Handlers used across projects. """
 
-
 import logging
 
 import django.utils.timezone
@@ -8,7 +7,6 @@ from oauth2_provider import models as dot_models
 from provider.oauth2 import models as dop_models
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_oauth.authentication import OAuth2Authentication
-from edx_django_utils.monitoring import set_custom_metric
 
 
 OAUTH2_TOKEN_ERROR = u'token_error'
@@ -21,41 +19,22 @@ OAUTH2_TOKEN_ERROR_NOT_PROVIDED = u'token_not_provided'
 log = logging.getLogger(__name__)
 
 
-class OAuth2AuthenticationDeprecated(OAuth2Authentication):
-    """
-    This child class was added to add new_relic metrics to OAuth2Authentication. This should be very temporary.
-    """
-
-    def authenticate(self, request):
-        """
-        Returns two-tuple of (user, token) if access token authentication
-        succeeds, None if the user did not try to authenticate using an access
-        token, or raises an AuthenticationFailed (HTTP 401) if authentication
-        fails.
-        """
-        set_custom_metric("OAuth2AuthenticationDeprecated", "Failed")
-        output = super(OAuth2AuthenticationDeprecated, self).authenticate(request)
-        if output is None:
-            set_custom_metric("OAuth2AuthenticationDeprecated", "None")
-        else:
-            set_custom_metric("OAuth2AuthenticationDeprecated", "Success")
-        return output
-
-
-class OAuth2AuthenticationAllowInactiveUser(OAuth2AuthenticationDeprecated):
+class OAuth2AuthenticationAllowInactiveUser(OAuth2Authentication):
     """
     This is a temporary workaround while the is_active field on the user is coupled
     with whether or not the user has verified ownership of their claimed email address.
     Once is_active is decoupled from verified_email, we will no longer need this
     class override.
+
     But until then, this authentication class ensures that the user is logged in,
     but does not require that their account "is_active".
+
     This class can be used for an OAuth2-accessible endpoint that allows users to access
     that endpoint without having their email verified.  For example, this is used
     for mobile endpoints.
     """
 
-    def authenticate(self, request):
+    def authenticate(self, *args, **kwargs):
         """
         Returns two-tuple of (user, token) if access token authentication
         succeeds, raises an AuthenticationFailed (HTTP 401) if authentication
@@ -64,7 +43,7 @@ class OAuth2AuthenticationAllowInactiveUser(OAuth2AuthenticationDeprecated):
         """
 
         try:
-            return super(OAuth2AuthenticationAllowInactiveUser, self).authenticate(request)
+            return super(OAuth2AuthenticationAllowInactiveUser, self).authenticate(*args, **kwargs)
         except AuthenticationFailed as exc:
             if isinstance(exc.detail, dict):
                 developer_message = exc.detail['developer_message']
@@ -85,6 +64,7 @@ class OAuth2AuthenticationAllowInactiveUser(OAuth2AuthenticationDeprecated):
     def authenticate_credentials(self, request, access_token):
         """
         Authenticate the request, given the access token.
+
         Overrides base class implementation to discard failure if user is
         inactive.
         """

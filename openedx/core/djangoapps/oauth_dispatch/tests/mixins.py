@@ -1,12 +1,11 @@
 """
 OAuth Dispatch test mixins
 """
-
-
-import jwt
 from django.conf import settings
+
 from jwkest.jwk import KEYS
 from jwkest.jws import JWS
+import jwt
 from jwt.exceptions import ExpiredSignatureError
 
 from student.models import UserProfile, anonymous_id_for_user
@@ -66,9 +65,6 @@ class AccessTokenMixin(object):
             'sub': anonymous_id_for_user(user, None),
             'email_verified': user.is_active,
         }
-
-        if 'user_id' in scopes:
-            expected['user_id'] = user.id
 
         if 'email' in scopes:
             expected['email'] = user.email

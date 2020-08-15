@@ -1,22 +1,22 @@
 """
 Tests for block_structure_factory.py
 """
-
-
 from django.test import TestCase
-
 from xmodule.modulestore.exceptions import ItemNotFoundError
 
+from ..store import BlockStructureStore
 from ..exceptions import BlockStructureNotFound
 from ..factory import BlockStructureFactory
-from ..store import BlockStructureStore
-from .helpers import ChildrenMapTestMixin, MockCache, MockModulestoreFactory
+from .helpers import (
+    MockCache, MockModulestoreFactory, ChildrenMapTestMixin
+)
 
 
 class TestBlockStructureFactory(TestCase, ChildrenMapTestMixin):
     """
     Tests for BlockStructureFactory
     """
+    shard = 2
 
     def setUp(self):
         super(TestBlockStructureFactory, self).setUp()

@@ -2,15 +2,14 @@
 Contains methods for accessing weekly course highlights. Weekly highlights is a
 schedule experience built on the Schedules app.
 """
-
-
 import logging
 
-from lms.djangoapps.courseware.model_data import FieldDataCache
-from lms.djangoapps.courseware.module_render import get_module_for_descriptor
+from courseware.module_render import get_module_for_descriptor
+from courseware.model_data import FieldDataCache
 from openedx.core.djangoapps.schedules.config import COURSE_UPDATE_WAFFLE_FLAG
 from openedx.core.djangoapps.schedules.exceptions import CourseUpdateDoesNotExist
 from openedx.core.lib.request_utils import get_request_or_stub
+
 from xmodule.modulestore.django import modulestore
 
 log = logging.getLogger(__name__)
@@ -36,9 +35,8 @@ def course_has_highlights(course_key):
         )
 
         if not highlights_are_available:
-            log.warning(
-                u"Course team enabled highlights and provided no highlights in %s",
-                course_key
+            log.error(
+                "Course team enabled highlights and provided no highlights."
             )
 
         return highlights_are_available
@@ -68,14 +66,14 @@ def _get_course_with_highlights(course_key):
     # pylint: disable=missing-docstring
     if not COURSE_UPDATE_WAFFLE_FLAG.is_enabled(course_key):
         raise CourseUpdateDoesNotExist(
-            u"%s Course Update Messages waffle flag is disabled.",
+            "%s Course Update Messages waffle flag is disabled.",
             course_key,
         )
 
     course_descriptor = _get_course_descriptor(course_key)
     if not course_descriptor.highlights_enabled_for_messaging:
         raise CourseUpdateDoesNotExist(
-            u"%s Course Update Messages are disabled.",
+            "%s Course Update Messages are disabled.",
             course_key,
         )
 
@@ -86,7 +84,7 @@ def _get_course_descriptor(course_key):
     course_descriptor = modulestore().get_course(course_key, depth=1)
     if course_descriptor is None:
         raise CourseUpdateDoesNotExist(
-            u"Course {} not found.".format(course_key)
+            "Course {} not found.".format(course_key)
         )
     return course_descriptor
 
@@ -118,7 +116,7 @@ def _get_highlights_for_week(sections, week_num, course_key):
     num_sections = len(sections)
     if not (1 <= week_num <= num_sections):
         raise CourseUpdateDoesNotExist(
-            u"Requested week {} but {} has only {} sections.".format(
+            "Requested week {} but {} has only {} sections.".format(
                 week_num, course_key, num_sections
             )
         )

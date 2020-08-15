@@ -1,7 +1,7 @@
 """
 Internationalization tasks
 """
-
+from __future__ import print_function
 
 import re
 import subprocess
@@ -9,7 +9,6 @@ import sys
 
 from path import Path as path
 from paver.easy import cmdopts, needs, sh, task
-from six.moves import input
 
 from .utils.cmd import django_cmd
 from .utils.envs import Env
@@ -132,9 +131,9 @@ def i18n_validate_transifex_config():
     if not config.isfile or config.getsize == 0:
         msg = colorize(
             'red',
-            u"Cannot connect to Transifex, config file is missing"
-            u" or empty: {config} \nSee "
-            u"http://help.transifex.com/features/client/#transifexrc \n".format(
+            "Cannot connect to Transifex, config file is missing"
+            " or empty: {config} \nSee "
+            "http://help.transifex.com/features/client/#transifexrc \n".format(
                 config=config,
             )
         )
@@ -221,7 +220,7 @@ def i18n_robot_pull():
     print("\n\nValidating translations with `i18n_tool validate`...")
     sh("i18n_tool validate")
 
-    con = input("Continue with committing these translations (y/n)? ")
+    con = raw_input("Continue with committing these translations (y/n)? ")
 
     if con.lower() == 'y':
         sh('git add conf/locale')

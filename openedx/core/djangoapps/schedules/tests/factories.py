@@ -1,14 +1,9 @@
-"""
-Factories for schedules tests
-"""
-
-
 import factory
 import pytz
 
 from openedx.core.djangoapps.schedules import models
-from openedx.core.djangoapps.site_configuration.tests.factories import SiteFactory
 from student.tests.factories import CourseEnrollmentFactory
+from openedx.core.djangoapps.site_configuration.tests.factories import SiteFactory
 
 
 class ScheduleExperienceFactory(factory.DjangoModelFactory):
@@ -22,9 +17,7 @@ class ScheduleFactory(factory.DjangoModelFactory):
     class Meta(object):
         model = models.Schedule
 
-    # TODO drop 'start' when removing this field in column renaming release
     start = factory.Faker('future_datetime', tzinfo=pytz.UTC)
-    start_date = factory.Faker('future_datetime', tzinfo=pytz.UTC)
     upgrade_deadline = factory.Faker('future_datetime', tzinfo=pytz.UTC)
     enrollment = factory.SubFactory(CourseEnrollmentFactory)
     experience = factory.RelatedFactory(ScheduleExperienceFactory, 'schedule')

@@ -1,18 +1,16 @@
 """
 CourseDetails
 """
-
-
-import logging
 import re
+import logging
 
 from django.conf import settings
 
-from openedx.core.djangolib.markup import HTML
-from openedx.core.lib.courses import course_image_url
 from xmodule.fields import Date
-from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.exceptions import ItemNotFoundError
+from openedx.core.lib.courses import course_image_url
+from xmodule.modulestore.django import modulestore
+
 
 # This list represents the attribute keys for a course's 'about' info.
 # Note: The 'video' attribute is intentionally excluded as it must be
@@ -82,7 +80,7 @@ class CourseDetails(object):
         Retrieve an attribute from a course's "about" info
         """
         if attribute not in ABOUT_ATTRIBUTES + ['video']:
-            raise ValueError(u"'{0}' is not a valid course about attribute.".format(attribute))
+            raise ValueError("'{0}' is not a valid course about attribute.".format(attribute))
 
         usage_key = course_key.make_usage_key('about', attribute)
         try:
@@ -334,7 +332,8 @@ class CourseDetails(object):
         result = None
         if video_key:
             result = (
-                HTML(u'<iframe title="YouTube Video" width="560" height="315" src="//www.youtube.com/embed/{}?rel=0" '
-                     'frameborder="0" allowfullscreen=""></iframe>').format(video_key)
+                '<iframe title="YouTube Video" width="560" height="315" src="//www.youtube.com/embed/' +
+                video_key +
+                '?rel=0" frameborder="0" allowfullscreen=""></iframe>'
             )
         return result

@@ -1,8 +1,6 @@
 """
 A trivial task for health checks
 """
-
-
 from celery.task import task
 
 

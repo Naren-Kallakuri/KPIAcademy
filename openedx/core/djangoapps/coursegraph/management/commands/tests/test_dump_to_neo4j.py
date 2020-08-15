@@ -2,14 +2,14 @@
 """
 Tests for the dump_to_neo4j management command.
 """
-
+from __future__ import unicode_literals
 
 from datetime import datetime
 
 import ddt
 import mock
-import six
 from django.core.management import call_command
+from django.utils import six
 from xmodule.modulestore.tests.django_utils import SharedModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 
@@ -229,12 +229,6 @@ class TestDumpToNeo4jCommand(TestDumpToNeo4jCommandBase):
         )
 
 
-class SomeThing(object):
-    """Just to test the stringification of an object."""
-    def __str__(self):
-        return "<SomeThing>"
-
-
 @skip_unless_lms
 @ddt.ddt
 class TestModuleStoreSerializer(TestDumpToNeo4jCommandBase):
@@ -253,16 +247,16 @@ class TestModuleStoreSerializer(TestDumpToNeo4jCommandBase):
         """
         fields, label = serialize_item(self.course)
         self.assertEqual(label, "course")
-        self.assertIn("edited_on", list(fields.keys()))
-        self.assertIn("display_name", list(fields.keys()))
-        self.assertIn("org", list(fields.keys()))
-        self.assertIn("course", list(fields.keys()))
-        self.assertIn("run", list(fields.keys()))
-        self.assertIn("course_key", list(fields.keys()))
-        self.assertIn("location", list(fields.keys()))
-        self.assertIn("block_type", list(fields.keys()))
-        self.assertIn("detached", list(fields.keys()))
-        self.assertNotIn("checklist", list(fields.keys()))
+        self.assertIn("edited_on", fields.keys())
+        self.assertIn("display_name", fields.keys())
+        self.assertIn("org", fields.keys())
+        self.assertIn("course", fields.keys())
+        self.assertIn("run", fields.keys())
+        self.assertIn("course_key", fields.keys())
+        self.assertIn("location", fields.keys())
+        self.assertIn("block_type", fields.keys())
+        self.assertIn("detached", fields.keys())
+        self.assertNotIn("checklist", fields.keys())
 
     def test_serialize_course(self):
         """
@@ -384,7 +378,7 @@ class TestModuleStoreSerializer(TestDumpToNeo4jCommandBase):
 
     @ddt.data(
         (1, 1),
-        (SomeThing(), "<SomeThing>"),
+        (object, "<type 'object'>"),
         (1.5, 1.5),
         ("úñîçø∂é", "úñîçø∂é"),
         (b"plain string", b"plain string"),
@@ -393,8 +387,7 @@ class TestModuleStoreSerializer(TestDumpToNeo4jCommandBase):
         ((1,), "(1,)"),
         # list of elements should be coerced into a list of the
         # string representations of those elements
-        ([SomeThing(), SomeThing()], ["<SomeThing>", "<SomeThing>"]),
-        ([1, 2], ["1", "2"]),
+        ([object, object], ["<type 'object'>", "<type 'object'>"])
     )
     @ddt.unpack
     def test_coerce_types(self, original_value, coerced_expected):
@@ -429,7 +422,7 @@ class TestModuleStoreSerializer(TestDumpToNeo4jCommandBase):
         # 2 nodes and no relationships from the second
 
         self.assertEqual(len(mock_graph.nodes), 11)
-        six.assertCountEqual(self, submitted, self.course_strings)
+        self.assertItemsEqual(submitted, self.course_strings)
 
     @mock.patch('openedx.core.djangoapps.coursegraph.tasks.NodeSelector')
     @mock.patch('openedx.core.djangoapps.coursegraph.tasks.authenticate_and_create_graph')
@@ -452,7 +445,7 @@ class TestModuleStoreSerializer(TestDumpToNeo4jCommandBase):
             number_rollbacks=2,
         )
 
-        six.assertCountEqual(self, submitted, self.course_strings)
+        self.assertItemsEqual(submitted, self.course_strings)
 
     @mock.patch('openedx.core.djangoapps.coursegraph.tasks.NodeSelector')
     @mock.patch('openedx.core.djangoapps.coursegraph.tasks.authenticate_and_create_graph')

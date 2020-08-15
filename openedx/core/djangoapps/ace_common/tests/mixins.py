@@ -1,13 +1,10 @@
 # pylint: disable=missing-docstring
-
-
+from urlparse import parse_qs, urlparse
 import uuid
-
 from django.http import HttpRequest
-from edx_ace import Message, Recipient
 from mock import patch
-from six.moves.urllib.parse import parse_qs, urlparse  # pylint: disable=import-error
 
+from edx_ace import Message, Recipient
 from openedx.core.djangoapps.site_configuration.tests.factories import SiteFactory
 from student.tests.factories import UserFactory
 

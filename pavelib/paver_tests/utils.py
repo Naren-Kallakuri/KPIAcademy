@@ -1,11 +1,9 @@
 """Unit tests for the Paver server tasks."""
 
-
 import os
 from unittest import TestCase
 from uuid import uuid4
 
-import six
 from paver import tasks
 from paver.easy import BuildFailure
 
@@ -62,7 +60,7 @@ class MockEnvironment(tasks.Environment):
         else:
             output = message
         if not output.startswith("--->"):
-            self.messages.append(six.text_type(output))
+            self.messages.append(unicode(output))
 
 
 def fail_on_eslint(*args, **kwargs):

@@ -4,7 +4,6 @@ Tests for the DoneXBlock.
 This is nice as a simple example of the edX XBlock test framework.
 '''
 
-
 from openedx.tests.xblock_integration.xblock_testcase import XBlockTestCase
 
 

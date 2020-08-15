@@ -2,7 +2,6 @@
 Common utilities related to the mobile apps.
 """
 
-
 import re
 
 from django.conf import settings

@@ -1,13 +1,12 @@
 """
 Views for the credit Django app.
 """
-
+from __future__ import unicode_literals
 
 import datetime
 import logging
 
 import pytz
-import six
 from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -18,7 +17,7 @@ from rest_framework import generics, mixins, permissions, views, viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-from openedx.core.lib.api.authentication import OAuth2AuthenticationDeprecated
+from rest_framework_oauth.authentication import OAuth2Authentication
 from six import text_type
 
 from openedx.core.djangoapps.credit.api import create_credit_request
@@ -45,7 +44,7 @@ from openedx.core.lib.api.mixins import PutAsCreateMixin
 from openedx.core.lib.api.permissions import IsStaffOrOwner
 
 log = logging.getLogger(__name__)
-AUTHENTICATION_CLASSES = (JwtAuthentication, OAuth2AuthenticationDeprecated, SessionAuthentication,)
+AUTHENTICATION_CLASSES = (JwtAuthentication, OAuth2Authentication, SessionAuthentication,)
 
 
 class CreditProviderViewSet(viewsets.ReadOnlyModelViewSet):
@@ -159,7 +158,7 @@ class CreditEligibilityView(generics.ListAPIView):
             raise ValidationError(
                 {'detail': 'Both the course_key and username querystring parameters must be supplied.'})
 
-        course_key = six.text_type(course_key)
+        course_key = unicode(course_key)
 
         try:
             course_key = CourseKey.from_string(course_key)

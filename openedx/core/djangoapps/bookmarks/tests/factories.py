@@ -2,15 +2,12 @@
 Factories for Bookmark models.
 """
 
-
-from functools import partial
-
 import factory
 from factory.django import DjangoModelFactory
-from opaque_keys.edx.locator import CourseLocator
+from functools import partial
 
 from student.tests.factories import UserFactory
-
+from opaque_keys.edx.locator import CourseLocator
 from ..models import Bookmark, XBlockCache
 
 COURSE_KEY = CourseLocator(u'edX', u'test_course', u'test')

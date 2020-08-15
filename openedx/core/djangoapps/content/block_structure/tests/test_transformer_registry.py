@@ -2,13 +2,11 @@
 Tests for transformer_registry.py
 """
 
-
+import ddt
 from unittest import TestCase
 
-import ddt
-
 from ..transformer_registry import TransformerRegistry
-from .helpers import MockTransformer, clear_registered_transformers_cache, mock_registered_transformers
+from .helpers import MockTransformer, mock_registered_transformers, clear_registered_transformers_cache
 
 
 class TestTransformer1(MockTransformer):
@@ -37,6 +35,7 @@ class TransformerRegistryTestCase(TestCase):
     """
     Test cases for TransformerRegistry.
     """
+    shard = 2
 
     def tearDown(self):
         super(TransformerRegistryTestCase, self).tearDown()

@@ -19,7 +19,7 @@
                         this.state.sortKey = topics.sort_order;
                     }
 
-                    options.perPage = topics.results.length; // eslint-disable-line no-param-reassign
+                    options.perPage = topics.results.length;
                     BaseCollection.prototype.constructor.call(this, topics, options);
 
                     this.registerSortableField('name', gettext('name'));

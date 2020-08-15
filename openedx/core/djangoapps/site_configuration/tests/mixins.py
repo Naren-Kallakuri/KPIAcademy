@@ -1,8 +1,6 @@
 """
 Mixins for TestCase classes that need to account for multiple sites
 """
-
-
 from openedx.core.djangoapps.site_configuration.tests.factories import SiteConfigurationFactory, SiteFactory
 
 
@@ -59,7 +57,6 @@ class SiteMixin(object):
             values=site_configuration_values
         )
         self.use_site(site)
-        return site
 
     def use_site(self, site):
         """

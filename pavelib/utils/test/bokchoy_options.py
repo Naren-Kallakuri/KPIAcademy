@@ -2,7 +2,6 @@
 Definitions of all options used by the various bok_choy tasks.
 """
 
-
 import os
 from optparse import make_option
 
@@ -88,10 +87,14 @@ BOKCHOY_OPTS = [
         dest="save_screenshots",
         help="deprecated in favor of save-screenshots"
     ),
-    make_option(
-        '--with-wtw',
-        dest='with_wtw',
-        action='store',
-        help="Only run tests based on the lines changed relative to the specified branch"
-    ),
 ]
+
+PA11Y_SINGLE_URL = make_option('--single-url', help='Crawl only the specified url')
+PA11Y_HTML = ('with-html', 'w', 'Include html reports')
+PA11Y_COURSE_KEY = make_option('--course-key', help='Course key for test course')
+PA11Y_FETCH_COURSE = make_option(
+    "--fetch-course",
+    action="store_true",
+    dest="should_fetch_course",
+    help='Course key for test course',
+)

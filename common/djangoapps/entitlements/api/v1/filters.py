@@ -1,5 +1,3 @@
-
-
 from django_filters import rest_framework as filters
 
 from entitlements.models import CourseEntitlement
@@ -18,10 +16,10 @@ class CharListFilter(filters.CharFilter):
 class UUIDListFilter(CharListFilter):
     """ Filters a field via a comma-delimited list of UUIDs. """
 
-    def __init__(self, field_name='uuid', label=None, widget=None, method=None, lookup_expr='in', required=False,
+    def __init__(self, name='uuid', label=None, widget=None, method=None, lookup_expr='in', required=False,
                  distinct=False, exclude=False, **kwargs):
         super(UUIDListFilter, self).__init__(
-            field_name=field_name,
+            name=name,
             label=label,
             widget=widget,
             method=method,
@@ -36,7 +34,7 @@ class UUIDListFilter(CharListFilter):
 class CourseEntitlementFilter(filters.FilterSet):
 
     uuid = UUIDListFilter()
-    user = filters.CharFilter(field_name='user__username')
+    user = filters.CharFilter(name='user__username')
 
     class Meta:
         model = CourseEntitlement

@@ -12,9 +12,6 @@ function LoggedInUser({ userInformation, setErrorState, zendeskApiHost, submitFo
   if (userInformation.enrollments) {
     courseElement = (<div>
       <label className="label-course" htmlFor="course">{gettext('Course Name')}</label>
-      <p className="message-desc"><i>
-      {gettext('For inquiries regarding assignments, grades, or structure of a specific course, please post in the discussion forums for that course directly.')}
-      </i></p>
       <select className="form-control select-course" id="course" defaultValue={userInformation.course_id}>
         <option key="select-course" value="">--------</option>
         <option key="not-course-specific" value="Not specific to a course">
@@ -33,27 +30,6 @@ function LoggedInUser({ userInformation, setErrorState, zendeskApiHost, submitFo
       <input type="text" className="form-control" id="course" />
     </div>);
   }
-
-  let subjectElement;
-  subjectElement = (<div>
-    <label htmlFor="subject">{gettext('Subject')}</label>
-    <select className="form-control select-subject" id="subject">
-      <option value="">--------</option>
-      <option value="Account Settings">{gettext('Account Settings')}</option>
-      <option value="Billing/Payment Options">{gettext('Billing/Payment Options')}</option>
-      <option value="Certificates">{gettext('Certificates')}</option>
-      <option value="Course Content">{gettext('Course Content')}</option>
-      <option value="Deadlines">{gettext('Deadlines')}</option>
-      <option value="Errors/Technical Issues">{gettext('Errors/Technical Issues')}</option>
-      <option value="Financial Aid">{gettext('Financial Aid')}</option>
-      <option value="Masters">{gettext('Masters')}</option>
-      <option value="MicroBachelors">{gettext('MicroBachelors')}</option>
-      <option value="Photo Verification">{gettext('Photo Verification')}</option>
-      <option value="Proctoring">{gettext('Proctoring')}</option>
-      <option value="Security">{gettext('Security')}</option>
-      <option value="Other">{gettext('Other')}</option>
-    </select>
-  </div>);
 
   return (<div>
     <div className="row">
@@ -82,7 +58,8 @@ function LoggedInUser({ userInformation, setErrorState, zendeskApiHost, submitFo
     <div className="row">
       <div className="col-sm-12">
         <div className="form-group">
-          {subjectElement}
+          <label htmlFor="subject">{gettext('Subject')}</label>
+          <input type="text" className="form-control" id="subject" />
         </div>
       </div>
     </div>

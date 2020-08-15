@@ -1,8 +1,3 @@
-"""
-Defines the URL routes for this app.
-"""
-
-
 from django.conf.urls import url
 
 from . import views

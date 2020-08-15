@@ -1,5 +1,4 @@
 
-
 from django.contrib.staticfiles.storage import staticfiles_storage
 
 

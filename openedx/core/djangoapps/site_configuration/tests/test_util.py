@@ -2,7 +2,6 @@
 Test helpers for Site Configuration.
 """
 
-
 from functools import wraps
 import contextlib
 

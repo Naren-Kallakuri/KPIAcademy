@@ -1,5 +1,3 @@
-
-
 import logging
 
 from django.conf import settings
@@ -75,12 +73,8 @@ class MakoLoader(object):
                 return source, file_path
 
     def load_template_source(self, template_name, template_dirs=None):
-        for origin in self.base_loader.get_template_sources(template_name, template_dirs):
-            try:
-                return self.base_loader.get_contents(origin), origin.name
-            except TemplateDoesNotExist:
-                pass
-        raise TemplateDoesNotExist(template_name)
+        # Just having this makes the template load as an instance, instead of a class.
+        return self.base_loader.load_template_source(template_name, template_dirs)
 
     def reset(self):
         self.base_loader.reset()

@@ -3,6 +3,7 @@ Tests for OAuth2.  This module is copied from django-rest-framework-oauth
 (tests/test_authentication.py) and updated to use our subclass of OAuth2Authentication.
 """
 
+from __future__ import unicode_literals
 
 import itertools
 import json
@@ -55,7 +56,7 @@ class OAuth2AuthenticationDebug(authentication.OAuth2AuthenticationAllowInactive
 
 
 urlpatterns = [
-    url(r'^oauth2/', include(('provider.oauth2.urls', 'oauth2'), namespace='oauth2')),
+    url(r'^oauth2/', include('provider.oauth2.urls', namespace='oauth2')),
     url(
         r'^oauth2-test/$',
         MockView.as_view(authentication_classes=[authentication.OAuth2AuthenticationAllowInactiveUser])
@@ -76,6 +77,7 @@ urlpatterns = [
 @override_settings(ROOT_URLCONF=__name__)
 class OAuth2Tests(TestCase):
     """OAuth 2.0 authentication"""
+    shard = 2
 
     def setUp(self):
         super(OAuth2Tests, self).setUp()
@@ -158,7 +160,7 @@ class OAuth2Tests(TestCase):
         Ensure that the response has the appropriate HTTP status, and provides
         the expected error_code in the JSON response body.
         """
-        response_dict = json.loads(response.content.decode('utf-8'))
+        response_dict = json.loads(response.content)
         self.assertEqual(response.status_code, status_code)
         self.assertEqual(response_dict['error_code'], error_code)
 
@@ -182,7 +184,7 @@ class OAuth2Tests(TestCase):
         # authorization passes to the next registered authorization class, or
         # (in this case) to standard DRF fallback code, so no error_code is
         # provided (yet).
-        self.assertNotIn('error_code', json.loads(response.content.decode('utf-8')))
+        self.assertNotIn('error_code', json.loads(response.content))
 
     @unittest.skipUnless(oauth2_provider, 'django-oauth2-provider not installed')
     def test_get_form_passing_auth(self):
@@ -218,7 +220,7 @@ class OAuth2Tests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # This case is handled directly by DRF so no error_code is provided (yet).
-        self.assertNotIn('error_code', json.loads(response.content.decode('utf-8')))
+        self.assertNotIn('error_code', json.loads(response.content))
 
     @unittest.skipUnless(oauth2_provider, 'django-oauth2-provider not installed')
     def test_post_form_passing_auth(self):

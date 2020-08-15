@@ -1,8 +1,6 @@
 """
 Forms for configuring courses for verified track cohorting
 """
-
-
 from django import forms
 from django.utils.translation import ugettext as _
 from opaque_keys import InvalidKeyError

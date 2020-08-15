@@ -2,11 +2,8 @@
 Middleware used for adjusting headers in a response before it is sent to the end user.
 """
 
-from django.utils.deprecation import MiddlewareMixin
-import six
 
-
-class HeaderControlMiddleware(MiddlewareMixin):
+class HeaderControlMiddleware(object):
     """
     Middleware that can modify/remove headers in a response.
 
@@ -21,7 +18,7 @@ class HeaderControlMiddleware(MiddlewareMixin):
         for header in getattr(response, 'remove_headers', []):
             del response[header]
 
-        for header, value in six.iteritems(getattr(response, 'force_headers', {})):
+        for header, value in getattr(response, 'force_headers', {}).iteritems():
             response[header] = value
 
         return response

@@ -1,22 +1,9 @@
-Status: Maintenance
+Course Experience
+-----------------
 
-Responsibilities
-================
-The Course Experience directory contains a Django application that provides the
-Course Home page (or course landing page), and various resources in support of
-the landing experience.
-
-
-Direction: Deprecate
-====================
-This will be replaced eventually by new UI in the form of Microfrontends.  New functionality should not be added here.
-
-
-Glossary
-========
-
-More Documentation
-==================
+This directory contains a Django application that provides the Course Home page
+(or course landing page), and various resources in support of the landing
+experience.
 
 The course experience consists of a number of views:
 

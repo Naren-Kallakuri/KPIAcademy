@@ -1,7 +1,6 @@
 """
 Django admin page for waffle utils models
 """
-
 from django.contrib import admin
 
 from config_models.admin import KeyedConfigurationModelAdmin

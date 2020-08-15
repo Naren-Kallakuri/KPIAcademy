@@ -3,6 +3,7 @@ Minimal Django settings for tests of common/lib.
 Required in Django 1.9+ due to imports of models in stock Django apps.
 """
 
+from __future__ import absolute_import, unicode_literals
 
 import sys
 import tempfile
@@ -59,20 +60,19 @@ PROCTORING_BACKENDS = {
 FEATURES = {}
 
 INSTALLED_APPS = (
+    'django_comment_common',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
     'djcelery',
-    'openedx.core.djangoapps.django_comment_common',
     'openedx.core.djangoapps.video_config',
     'openedx.core.djangoapps.video_pipeline',
     'openedx.core.djangoapps.bookmarks.apps.BookmarksConfig',
     'edxval',
-    'lms.djangoapps.courseware',
+    'courseware',
     'student',
     'openedx.core.djangoapps.site_configuration',
-    'lms.djangoapps.grades.apps.GradesConfig',
     'lms.djangoapps.certificates.apps.CertificatesConfig',
     'openedx.core.djangoapps.user_api',
     'course_modes.apps.CourseModesConfig',
@@ -85,25 +85,20 @@ INSTALLED_APPS = (
     'experiments',
     'openedx.features.content_type_gating',
     'openedx.features.course_duration_limits',
-    'openedx.features.discounts',
     'milestones',
     'celery_utils',
     'waffle',
-    'edx_when',
 
     # Django 1.11 demands to have imported models supported by installed apps.
     'completion',
-    'entitlements',
 )
 
 LMS_ROOT_URL = "http://localhost:8000"
 
 MEDIA_ROOT = tempfile.mkdtemp()
 
-RECALCULATE_GRADES_ROUTING_KEY = 'edx.core.default'
-POLICY_CHANGE_GRADES_ROUTING_KEY = 'edx.core.default'
-POLICY_CHANGE_TASK_RATE_LIMIT = '300/h'
-
+MICROSITE_BACKEND = 'microsite_configuration.backends.filebased.FilebasedMicrositeBackend'
+MICROSITE_TEMPLATE_BACKEND = 'microsite_configuration.backends.filebased.FilebasedMicrositeTemplateBackend'
 
 SECRET_KEY = 'insecure-secret-key'
 SITE_ID = 1
@@ -114,5 +109,3 @@ USE_TZ = True
 
 RETIREMENT_SERVICE_WORKER_USERNAME = 'RETIREMENT_SERVICE_USER'
 RETIRED_USERNAME_PREFIX = 'retired__user_'
-
-PROCTORING_SETTINGS = {}

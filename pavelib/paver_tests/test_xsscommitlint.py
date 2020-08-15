@@ -1,8 +1,6 @@
 """
 Tests for paver xsscommitlint quality tasks
 """
-
-
 from mock import patch
 from paver.easy import call_task
 

@@ -151,7 +151,7 @@ name in the ``@import`` line.
 
 Run the ``update_assets`` command to recompile the theme::
 
-    $ paver update_assets lms --settings=production
+    $ paver update_assets lms --settings=aws
 
 Microsites
 ==========

@@ -1,8 +1,3 @@
-"""
-Base file for testing email sending functionality
-"""
-
-
 import datetime
 import logging
 from collections import namedtuple
@@ -12,19 +7,16 @@ import attr
 import ddt
 import pytz
 from django.conf import settings
-from django.contrib.auth.models import User
-from django.db.models import Max
 from edx_ace.channel import ChannelMap, ChannelType
 from edx_ace.test_utils import StubPolicy, patch_policies
 from edx_ace.utils.date import serialize
 from freezegun import freeze_time
 from mock import Mock, patch
 from opaque_keys.edx.keys import CourseKey
-from six.moves import range
 
 from course_modes.models import CourseMode
 from course_modes.tests.factories import CourseModeFactory
-from lms.djangoapps.courseware.models import DynamicUpgradeDeadlineConfiguration
+from courseware.models import DynamicUpgradeDeadlineConfiguration
 from lms.djangoapps.commerce.models import CommerceConfiguration
 from openedx.core.djangoapps.schedules import resolvers, tasks
 from openedx.core.djangoapps.schedules.resolvers import _get_datetime_beginning_of_day
@@ -107,18 +99,6 @@ class ScheduleSendEmailTestMixin(FilteredQueryCountMixin):
     def _calculate_bin_for_user(self, user):
         return user.id % self.task.num_bins
 
-    def _next_user_id(self):
-        """
-        Get the next user ID which is a multiple of the bin count and greater
-        than the current largest user ID.  Avoids intermittent ID collisions
-        with the user created in ModuleStoreTestCase.setUp().
-        """
-        max_user_id = User.objects.aggregate(Max('id'))['id__max']
-        if max_user_id is None:
-            max_user_id = 0
-        num_bins = self.task.num_bins
-        return max_user_id + num_bins - (max_user_id % num_bins)
-
     def _get_dates(self, offset=None):
         current_day = _get_datetime_beginning_of_day(datetime.datetime.now(pytz.UTC))
         offset = offset or self.expected_offsets[0]
@@ -131,17 +111,14 @@ class ScheduleSendEmailTestMixin(FilteredQueryCountMixin):
 
     def _get_template_overrides(self):
         templates_override = deepcopy(settings.TEMPLATES)
-        templates_override[0]['OPTIONS']['string_if_invalid'] = u"TEMPLATE WARNING - MISSING VARIABLE [%s]"
+        templates_override[0]['OPTIONS']['string_if_invalid'] = "TEMPLATE WARNING - MISSING VARIABLE [%s]"
         return templates_override
 
     def _schedule_factory(self, offset=None, **factory_kwargs):
         _, _, target_day, upgrade_deadline = self._get_dates(offset=offset)
         factory_kwargs.setdefault('start', target_day)
-        factory_kwargs.setdefault('start_date', target_day)
         factory_kwargs.setdefault('upgrade_deadline', upgrade_deadline)
         factory_kwargs.setdefault('enrollment__course__self_paced', True)
-        # Make all schedules in the same course
-        factory_kwargs.setdefault('enrollment__course__run', '2012_Fall')
         if hasattr(self, 'experience_type'):
             factory_kwargs.setdefault('experience__experience_type', self.experience_type)
         schedule = ScheduleFactory(**factory_kwargs)
@@ -210,7 +187,7 @@ class ScheduleSendEmailTestMixin(FilteredQueryCountMixin):
             target_day_str = serialize(target_day)
 
             for b in range(self.task.num_bins):
-                LOG.debug(u'Checking bin %d', b)
+                LOG.debug('Checking bin %d', b)
                 expected_queries = NUM_QUERIES_SITE_SCHEDULES
                 if b in bins_in_use:
                     if is_first_match:
@@ -313,8 +290,8 @@ class ScheduleSendEmailTestMixin(FilteredQueryCountMixin):
         for config in (this_config, other_config):
             ScheduleConfigFactory.create(site=config.site)
 
-        user1 = UserFactory.create(id=self._next_user_id())
-        user2 = UserFactory.create(id=user1.id + self.task.num_bins)
+        user1 = UserFactory.create(id=self.task.num_bins)
+        user2 = UserFactory.create(id=self.task.num_bins * 2)
         current_day, offset, target_day, upgrade_deadline = self._get_dates()
 
         self._schedule_factory(
@@ -340,7 +317,7 @@ class ScheduleSendEmailTestMixin(FilteredQueryCountMixin):
 
     @ddt.data(True, False)
     def test_course_end(self, has_course_ended):
-        user1 = UserFactory.create(id=self._next_user_id())
+        user1 = UserFactory.create(id=self.task.num_bins)
         current_day, offset, target_day, upgrade_deadline = self._get_dates()
 
         end_date_offset = -2 if has_course_ended else 2

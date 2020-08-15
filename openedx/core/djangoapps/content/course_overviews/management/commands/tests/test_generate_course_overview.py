@@ -1,14 +1,12 @@
 """
 Tests that the generate_course_overview management command actually generates course overviews.
 """
-
-
-import six
 from django.core.management.base import CommandError
 from mock import patch
 
 from openedx.core.djangoapps.content.course_overviews.management.commands import generate_course_overview
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
@@ -17,6 +15,7 @@ class TestGenerateCourseOverview(ModuleStoreTestCase):
     """
     Tests course overview management command.
     """
+    shard = 2
 
     def setUp(self):
         """
@@ -59,7 +58,7 @@ class TestGenerateCourseOverview(ModuleStoreTestCase):
         Test that a specified course is loaded into course overviews.
         """
         self._assert_courses_not_in_overview(self.course_key_1, self.course_key_2)
-        self.command.handle(six.text_type(self.course_key_1), all_courses=False)
+        self.command.handle(unicode(self.course_key_1), all_courses=False)
         self._assert_courses_in_overview(self.course_key_1)
         self._assert_courses_not_in_overview(self.course_key_2)
 
@@ -74,11 +73,11 @@ class TestGenerateCourseOverview(ModuleStoreTestCase):
             self.store.update_item(course, self.user.id)
 
         # force_update course_key_1, but not course_key_2
-        self.command.handle(six.text_type(self.course_key_1), all_courses=False, force_update=True)
-        self.command.handle(six.text_type(self.course_key_2), all_courses=False, force_update=False)
+        self.command.handle(unicode(self.course_key_1), all_courses=False, force_update=True)
+        self.command.handle(unicode(self.course_key_2), all_courses=False, force_update=False)
 
-        self.assertEqual(CourseOverview.get_from_id(self.course_key_1).display_name, updated_course_name)
-        self.assertNotEqual(CourseOverview.get_from_id(self.course_key_2).display_name, updated_course_name)
+        self.assertEquals(CourseOverview.get_from_id(self.course_key_1).display_name, updated_course_name)
+        self.assertNotEquals(CourseOverview.get_from_id(self.course_key_2).display_name, updated_course_name)
 
     def test_invalid_key(self):
         """
@@ -107,11 +106,11 @@ class TestGenerateCourseOverview(ModuleStoreTestCase):
         self.command.handle(all_courses=True, force_update=True, routing_key='my-routing-key', chunk_size=10000)
 
         called_kwargs = mock_async_task.apply_async.call_args_list[0][1]
-        self.assertEqual(
-            sorted([six.text_type(self.course_key_1), six.text_type(self.course_key_2)]),
+        self.assertEquals(
+            sorted([unicode(self.course_key_1), unicode(self.course_key_2)]),
             sorted(called_kwargs.pop('args'))
         )
-        self.assertEqual({
+        self.assertEquals({
             'kwargs': {'force_update': True},
             'routing_key': 'my-routing-key'
         }, called_kwargs

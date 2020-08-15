@@ -1,27 +1,23 @@
 """
 Django storage backends for Open edX.
 """
-
-
-from django.conf import settings
 from django.contrib.staticfiles.storage import StaticFilesStorage
-from django.core.files.storage import get_storage_class, FileSystemStorage
-from django.utils.deconstruct import deconstructible
+from django.core.files.storage import get_storage_class
 from django.utils.lru_cache import lru_cache
-from pipeline.storage import NonPackagingMixin
+from pipeline.storage import NonPackagingMixin, PipelineCachedStorage
 from require.storage import OptimizedFilesMixin
-from storages.backends.s3boto3 import S3Boto3Storage
+from storages.backends.s3boto import S3BotoStorage
 
-from openedx.core.djangoapps.theming.storage import ThemeCachedFilesMixin, ThemePipelineMixin, ThemeMixin
+from openedx.core.djangoapps.theming.storage import ThemeCachedFilesMixin, ThemePipelineMixin, ThemeStorage
 
 
-class PipelineForgivingMixin(object):
+class PipelineForgivingStorage(PipelineCachedStorage):
     """
     An extension of the django-pipeline storage backend which forgives missing files.
     """
     def hashed_name(self, name, content=None, **kwargs):
         try:
-            out = super(PipelineForgivingMixin, self).hashed_name(name, content, **kwargs)
+            out = super(PipelineForgivingStorage, self).hashed_name(name, content, **kwargs)
         except ValueError:
             # This means that a file could not be found, and normally this would
             # cause a fatal error, which seems rather excessive given that
@@ -31,7 +27,7 @@ class PipelineForgivingMixin(object):
 
     def stored_name(self, name):
         try:
-            out = super(PipelineForgivingMixin, self).stored_name(name)
+            out = super(PipelineForgivingStorage, self).stored_name(name)
         except ValueError:
             # This means that a file could not be found, and normally this would
             # cause a fatal error, which seems rather excessive given that
@@ -40,35 +36,25 @@ class PipelineForgivingMixin(object):
         return out
 
 
-class ProductionMixin(
-        PipelineForgivingMixin,
+class ProductionStorage(
+        PipelineForgivingStorage,
         OptimizedFilesMixin,
         ThemePipelineMixin,
         ThemeCachedFilesMixin,
-        ThemeMixin,
+        ThemeStorage,
+        StaticFilesStorage
 ):
     """
-    This class combines several mixins that provide additional functionality, and
-    can be applied over an existing Storage.
-    We use this version on production.
+    This class combines Django's StaticFilesStorage class with several mixins
+    that provide additional functionality. We use this version on production.
     """
-    def __init__(self, *args, **kwargs):
-        kwargs.update(settings.STATICFILES_STORAGE_KWARGS.get(settings.STATICFILES_STORAGE, {}))
-        super(ProductionMixin, self).__init__(*args, **kwargs)
-
-
-class ProductionStorage(ProductionMixin, StaticFilesStorage):
-    pass
-
-
-class ProductionS3Storage(ProductionMixin, S3Boto3Storage):  # pylint: disable=abstract-method
     pass
 
 
 class DevelopmentStorage(
         NonPackagingMixin,
         ThemePipelineMixin,
-        ThemeMixin,
+        ThemeStorage,
         StaticFilesStorage
 ):
     """
@@ -79,26 +65,27 @@ class DevelopmentStorage(
     pass
 
 
-@deconstructible
-class OverwriteStorage(FileSystemStorage):
+class S3ReportStorage(S3BotoStorage):  # pylint: disable=abstract-method
     """
-    FileSystemStorage subclass which automatically overwrites any previous
-    file with the same name; used in test runs to avoid test file proliferation.
-    Copied from django-storages when this class was removed in version 1.6.
-
-    Comes from http://www.djangosnippets.org/snippets/976/
-    (even if it already exists in S3Storage for ages)
-    See also Django #4339, which might add this functionality to core.
+    Storage for reports.
     """
+    def __init__(self, acl=None, bucket=None, custom_domain=None, **settings):
+        """
+        init method for S3ReportStorage, Note that we have added an extra key-word
+        argument named "custom_domain" and this argument should not be passed to the superclass's init.
 
-    def get_available_name(self, name, max_length=None):
+        Args:
+            acl: content policy for the uploads i.e. private, public etc.
+            bucket: Name of S3 bucket to use for storing and/or retrieving content
+            custom_domain: custom domain to use for generating file urls
+            **settings: additional settings to be passed in to S3BotoStorage,
+
+        Returns:
+
         """
-        Returns a filename that's free on the target storage system, and
-        available for new content to be written to.
-        """
-        if self.exists(name):
-            self.delete(name)
-        return name
+        if custom_domain:
+            self.custom_domain = custom_domain
+        super(S3ReportStorage, self).__init__(acl=acl, bucket=bucket, **settings)
 
 
 @lru_cache()

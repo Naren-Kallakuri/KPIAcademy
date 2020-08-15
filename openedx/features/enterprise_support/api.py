@@ -1,38 +1,28 @@
 """
 APIs providing support for enterprise functionality.
 """
-
-
 import logging
 from functools import wraps
-import traceback
 
-from crum import get_current_request
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site
 from django.core.cache import cache
+from django.urls import reverse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
-from django.urls import reverse
 from django.utils.http import urlencode
 from django.utils.translation import ugettext as _
-from edx_django_utils.cache import TieredCache
 from edx_rest_api_client.client import EdxRestApiClient
+from slumber.exceptions import HttpClientError, HttpNotFoundError, HttpServerError
+
 from openedx.core.djangoapps.oauth_dispatch.jwt import create_jwt_for_user
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
-from openedx.features.enterprise_support.utils import get_cache_key, get_data_consent_share_cache_key
-from slumber.exceptions import HttpClientError, HttpNotFoundError, HttpServerError
+from openedx.features.enterprise_support.utils import get_cache_key
 from third_party_auth.pipeline import get as get_partial_pipeline
 from third_party_auth.provider import Registry
 
 try:
-    from enterprise.models import (
-        EnterpriseCustomer,
-        EnterpriseCustomerIdentityProvider,
-        EnterpriseCustomerUser,
-        PendingEnterpriseCustomerUser
-    )
+    from enterprise.models import EnterpriseCustomer, EnterpriseCustomerUser
     from consent.models import DataSharingConsent, DataSharingConsentTextOverrides
 except ImportError:
     pass
@@ -161,8 +151,8 @@ class EnterpriseApiClient(object):
             endpoint.post(data=data)
         except (HttpClientError, HttpServerError):
             message = (
-                u"An error occured while posting EnterpriseCourseEnrollment for user {username} and "
-                u"course run {course_id} (consent_granted value: {consent_granted})"
+                "An error occured while posting EnterpriseCourseEnrollment for user {username} and "
+                "course run {course_id} (consent_granted value: {consent_granted})"
             ).format(
                 username=username,
                 course_id=course_id,
@@ -195,6 +185,7 @@ class EnterpriseApiClient(object):
                         "enterprise_customer": {
                             "uuid": "cf246b88-d5f6-4908-a522-fc307e0b0c59",
                             "name": "TestShib",
+                            "catalog": 2,
                             "active": true,
                             "site": {
                                 "domain": "example.com",
@@ -258,11 +249,9 @@ class EnterpriseApiClient(object):
             response = endpoint().get(**querystring)
         except (HttpClientError, HttpServerError):
             LOGGER.exception(
-                u'Failed to get enterprise-learner for user [%s] with client user [%s]. Caller: %s, Request PATH: %s',
+                'Failed to get enterprise-learner for user [%s] with client user [%s]',
                 user.username,
-                self.user.username,
-                "".join(traceback.format_stack()),
-                get_current_request().META['PATH_INFO'],
+                self.user.username
             )
             return None
 
@@ -313,7 +302,7 @@ def data_sharing_consent_required(view_func):
         consent_url = get_enterprise_consent_url(request, course_id, enrollment_exists=True)
         if consent_url:
             real_user = getattr(request.user, 'real_user', request.user)
-            LOGGER.info(
+            LOGGER.warning(
                 u'User %s cannot access the course %s because they have not granted consent',
                 real_user,
                 course_id,
@@ -373,7 +362,7 @@ def enterprise_customer_from_cache(request=None, uuid=None):
         enterprise_customer = cache.get(cache_key)
 
     # Check if it's cached in the session.
-    if not enterprise_customer and request:
+    if not enterprise_customer and request and request.user.is_authenticated:
         enterprise_customer = request.session.get('enterprise_customer')
 
     return enterprise_customer
@@ -452,9 +441,7 @@ def enterprise_customer_for_request(request):
     if 'enterprise_customer' in request.session:
         return enterprise_customer_from_cache(request=request)
     else:
-        enterprise_customer = enterprise_customer_from_api(request)
-        request.session['enterprise_customer'] = enterprise_customer
-        return enterprise_customer
+        return enterprise_customer_from_api(request)
 
 
 @enterprise_is_enabled(otherwise=False)
@@ -463,9 +450,9 @@ def consent_needed_for_course(request, user, course_id, enrollment_exists=False)
     Wrap the enterprise app check to determine if the user needs to grant
     data sharing permissions before accessing a course.
     """
-    consent_cache_key = get_data_consent_share_cache_key(user.id, course_id)
-    data_sharing_consent_needed_cache = TieredCache.get_cached_response(consent_cache_key)
-    if data_sharing_consent_needed_cache.is_found and data_sharing_consent_needed_cache.value == 0:
+    consent_key = ('data_sharing_consent_needed', course_id)
+
+    if request.session.get(consent_key) is False:
         return False
 
     enterprise_learner_details = get_enterprise_learner_data(user)
@@ -474,8 +461,7 @@ def consent_needed_for_course(request, user, course_id, enrollment_exists=False)
     else:
         client = ConsentApiClient(user=request.user)
         consent_needed = any(
-            Site.objects.get(domain=learner['enterprise_customer']['site']['domain']) == request.site
-            and client.consent_required(
+            client.consent_required(
                 username=user.username,
                 course_id=course_id,
                 enterprise_customer_uuid=learner['enterprise_customer']['uuid'],
@@ -484,9 +470,9 @@ def consent_needed_for_course(request, user, course_id, enrollment_exists=False)
             for learner in enterprise_learner_details
         )
     if not consent_needed:
-        # Set an ephemeral item in the cache to prevent us from needing
+        # Set an ephemeral item in the user's session to prevent us from needing
         # to make a Consent API request every time this function is called.
-        TieredCache.set_all_tiers(consent_cache_key, 0, settings.DATA_CONSENT_SHARE_CACHE_TIMEOUT)
+        request.session[consent_key] = False
 
     return consent_needed
 
@@ -551,7 +537,7 @@ def get_enterprise_consent_url(request, course_id, user=None, return_to=None, en
     }
     querystring = urlencode(url_params)
     full_url = reverse('grant_data_sharing_permissions') + '?' + querystring
-    LOGGER.info(u'Redirecting to %s to complete data sharing consent', full_url)
+    LOGGER.info('Redirecting to %s to complete data sharing consent', full_url)
     return full_url
 
 
@@ -566,6 +552,17 @@ def get_enterprise_learner_data(user):
             return enterprise_learner_data['results']
 
 
+@enterprise_is_enabled(otherwise={})
+def get_enterprise_customer_for_learner(site, user):
+    """
+    Return enterprise customer to whom given learner belongs.
+    """
+    enterprise_learner_data = get_enterprise_learner_data(user)
+    if enterprise_learner_data:
+        return enterprise_learner_data[0]['enterprise_customer']
+    return {}
+
+
 def get_consent_notification_data(enterprise_customer):
     """
     Returns the consent notification data from DataSharingConsentPage modal
@@ -578,7 +575,7 @@ def get_consent_notification_data(enterprise_customer):
         message_template = consent_page.declined_notification_message
     except DataSharingConsentTextOverrides.DoesNotExist:
         LOGGER.info(
-            u"DataSharingConsentPage object doesn't exit for {enterprise_customer_name}".format(
+            "DataSharingConsentPage object doesn't exit for {enterprise_customer_name}".format(
                 enterprise_customer_name=enterprise_customer['name']
             )
         )
@@ -625,12 +622,12 @@ def get_dashboard_consent_notification(request, user, course_enrollments):
         title_template, message_template = get_consent_notification_data(enterprise_customer)
         if not title_template:
             title_template = _(
-                u'Enrollment in {course_title} was not complete.'
+                'Enrollment in {course_title} was not complete.'
             )
         if not message_template:
             message_template = _(
                 'If you have concerns about sharing your data, please contact your administrator '
-                u'at {enterprise_customer_name}.'
+                'at {enterprise_customer_name}.'
             )
 
         title = title_template.format(
@@ -664,35 +661,3 @@ def insert_enterprise_pipeline_elements(pipeline):
     insert_point = pipeline.index('social_core.pipeline.social_auth.load_extra_data')
     for index, element in enumerate(additional_elements):
         pipeline.insert(insert_point + index, element)
-
-
-@enterprise_is_enabled()
-def unlink_enterprise_user_from_idp(request, user, idp_backend_name):
-    """
-    Un-links learner from their enterprise identity provider
-    Args:
-        request (wsgi request): request object
-        user (User): user who initiated disconnect request
-        idp_backend_name (str): Name of identity provider's backend
-
-    Returns: None
-
-    """
-    enterprise_customer = enterprise_customer_for_request(request)
-    if user and enterprise_customer:
-        enabled_providers = Registry.get_enabled_by_backend_name(idp_backend_name)
-        provider_ids = [enabled_provider.provider_id for enabled_provider in enabled_providers]
-        enterprise_customer_idps = EnterpriseCustomerIdentityProvider.objects.filter(
-            enterprise_customer__uuid=enterprise_customer['uuid'],
-            provider_id__in=provider_ids
-        )
-
-        if enterprise_customer_idps:
-            try:
-                # Unlink user email from each Enterprise Customer.
-                for enterprise_customer_idp in enterprise_customer_idps:
-                    EnterpriseCustomerUser.objects.unlink_user(
-                        enterprise_customer=enterprise_customer_idp.enterprise_customer, user_email=user.email
-                    )
-            except (EnterpriseCustomerUser.DoesNotExist, PendingEnterpriseCustomerUser.DoesNotExist):
-                pass

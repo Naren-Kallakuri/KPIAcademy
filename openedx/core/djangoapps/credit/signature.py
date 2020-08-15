@@ -16,12 +16,10 @@ we receive from the credit provider.
 
 """
 
-
 import hashlib
 import hmac
 import logging
 
-import six
 from django.conf import settings
 
 log = logging.getLogger(__name__)
@@ -33,9 +31,9 @@ def get_shared_secret_key(provider_id):
     """
     secret = getattr(settings, "CREDIT_PROVIDER_SECRET_KEYS", {}).get(provider_id)
 
-    if isinstance(secret, six.text_type):
+    if isinstance(secret, unicode):
         try:
-            secret.encode('ascii')
+            secret = str(secret)
         except UnicodeEncodeError:
             secret = None
             log.error(u'Shared secret key for credit provider "%s" contains non-ASCII unicode.', provider_id)

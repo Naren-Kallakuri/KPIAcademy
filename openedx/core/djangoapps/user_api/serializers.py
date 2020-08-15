@@ -1,13 +1,11 @@
 """
 Django REST Framework serializers for the User API application
 """
-
-
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 from rest_framework import serializers
 
-from lms.djangoapps.verify_student.models import ManualVerification, SoftwareSecurePhotoVerification, SSOVerification
+from lms.djangoapps.verify_student.models import SoftwareSecurePhotoVerification, SSOVerification, ManualVerification
 
 from .models import UserPreference
 
@@ -36,8 +34,6 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         # This list is the minimal set required by the notification service
         fields = ("id", "url", "email", "name", "username", "preferences")
         read_only_fields = ("id", "email", "username")
-        # For disambiguating within the drf-yasg swagger schema
-        ref_name = 'user_api.User'
 
 
 class UserPreferenceSerializer(serializers.HyperlinkedModelSerializer):

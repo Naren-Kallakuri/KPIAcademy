@@ -2,14 +2,13 @@
 Django template context processors.
 """
 
-
 from django.conf import settings
 from django.utils.http import urlquote_plus
 
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 
 
-def configuration_context(request):
+def configuration_context(request):  # pylint: disable=unused-argument
     """
     Configuration context for django templates.
     """

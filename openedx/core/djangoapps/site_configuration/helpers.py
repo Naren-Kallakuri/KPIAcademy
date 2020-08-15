@@ -1,9 +1,9 @@
 """
 Helpers methods for site configuration.
 """
-
-
 from django.conf import settings
+
+from microsite_configuration import microsite
 
 
 def get_current_site_configuration():
@@ -104,22 +104,23 @@ def get_value(val_name, default=None, **kwargs):
         default: default value tp return if key is not found in the configuration
 
     Returns:
-        Configuration value for the given key.
+        Configuration/Microsite value for the given key.
     """
 
     if is_site_configuration_enabled():
         # Retrieve the requested field/value from the site configuration
         configuration_value = get_configuration_value(val_name, default=default)
     else:
-        configuration_value = default
+        # Retrieve the requested field/value from the microsite configuration
+        configuration_value = microsite.get_value(val_name, default=default, **kwargs)
 
     # Attempt to perform a dictionary update using the provided default
-    # This will fail if the default value is not a dictionary
+    # This will fail if either the default or the microsite value is not a dictionary
     try:
         value = dict(default)
         value.update(configuration_value)
 
-    # If the dictionary update fails, just use the configuration value
+    # If the dictionary update fails, just use the microsite value
     # TypeError: default is not iterable (simple value or None)
     # ValueError: default is iterable but not a dict (list, not dict)
     # AttributeError: default does not have an 'update' method
@@ -147,7 +148,7 @@ def get_dict(name, default=None):
     if is_site_configuration_enabled():
         return get_configuration_dict(name, default)
     else:
-        return default.copy()
+        return microsite.get_dict(name, default)
 
 
 def has_override_value(name):
@@ -164,34 +165,36 @@ def has_override_value(name):
     if is_site_configuration_enabled():
         return has_configuration_override(name)
     else:
-        return False
+        return microsite.has_override_value(name)
 
 
 def get_value_for_org(org, val_name, default=None):
     """
-    This returns a configuration value for a site configuration
+    This returns a configuration value for a site configuration or microsite configuration
     which has an org_filter that matches with the argument.
 
     Args:
         org (str): Course org filter, this value will be used to filter out the correct site configuration.
-        val_name (str): Name of the key for which to return configuration value.
+        name (str): Name of the key for which to return configuration value.
         default: default value to return if key is not present in the configuration
 
     Returns:
         Configuration value for the given key.
 
     """
+    # Here we first look for the asked org inside site configuration, and if org is not present in site configuration
+    # then we go ahead and look it inside microsite configuration.
     # Import is placed here to avoid model import at project startup.
     from openedx.core.djangoapps.site_configuration.models import SiteConfiguration
     if SiteConfiguration.has_org(org):
         return SiteConfiguration.get_value_for_org(org, val_name, default)
     else:
-        return default
+        return microsite.get_value_for_org(org, val_name, default)
 
 
 def get_current_site_orgs():
     """
-    This returns the orgs configured in site configuration for the current site.
+    This returns the orgs configured in site configuration or microsite configuration for the current site.
 
     Returns:
         list: A list of organization names.
@@ -206,15 +209,18 @@ def get_current_site_orgs():
 
 def get_all_orgs():
     """
-    This returns all of the orgs that are considered in site configurations.
+    This returns all of the orgs that are considered in site configurations or microsite configuration,
     This can be used, for example, to do filtering.
 
     Returns:
-        A set of all organizations present in the site configuration.
+        A list of all organizations present in either microsite configuration or site configuration.
     """
     # Import is placed here to avoid model import at project startup.
     from openedx.core.djangoapps.site_configuration.models import SiteConfiguration
-    return SiteConfiguration.get_all_orgs()
+    site_configuration_orgs = SiteConfiguration.get_all_orgs()
+    microsite_orgs = microsite.get_all_orgs()
+
+    return site_configuration_orgs.union(microsite_orgs)
 
 
 def page_title_breadcrumbs(*crumbs, **kwargs):

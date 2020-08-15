@@ -17,8 +17,6 @@ interface, as well.
 .. _Django-Pipeline: https://django-pipeline.readthedocs.org/
 .. _Django-Require: https://github.com/etianen/django-require
 """
-
-
 import os
 from collections import OrderedDict
 
@@ -47,7 +45,7 @@ class ThemeFilesFinder(BaseFinder):
         themes = get_themes()
         for theme in themes:
             theme_storage = self.storage_class(
-                location=os.path.join(theme.path, self.source_dir),
+                os.path.join(theme.path, self.source_dir),
                 prefix=theme.theme_dir_name,
             )
 

@@ -2,10 +2,9 @@
 This file contains a management command for exporting the modulestore to
 neo4j, a graph database.
 """
-
+from __future__ import unicode_literals, print_function
 
 import logging
-from textwrap import dedent
 
 from django.core.management.base import BaseCommand
 from django.utils import six
@@ -34,10 +33,8 @@ class Command(BaseCommand):
 
     Example usage:
       python manage.py lms dump_to_neo4j --host localhost --https_port 7473 \
-        --secure --user user --password password --settings=production
+        --secure --user user --password password --settings=aws
     """
-    help = dedent(__doc__).strip()
-
     def add_arguments(self, parser):
         parser.add_argument('--host', type=six.text_type)
         parser.add_argument('--https_port', type=int, default=7473)

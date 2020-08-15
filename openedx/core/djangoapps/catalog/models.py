@@ -1,6 +1,4 @@
 """Models governing integration with the catalog service."""
-
-
 from config_models.models import ConfigurationModel
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -11,11 +9,7 @@ from openedx.core.djangoapps.site_configuration import helpers
 
 
 class CatalogIntegration(ConfigurationModel):
-    """
-    Manages configuration for connecting to the catalog service and using its API.
-
-    .. no_pii:
-    """
+    """Manages configuration for connecting to the catalog service and using its API."""
     API_NAME = 'catalog'
     CACHE_KEY = 'catalog.api.data'
 
@@ -46,7 +40,7 @@ class CatalogIntegration(ConfigurationModel):
 
     service_username = models.CharField(
         max_length=100,
-        default=u'lms_catalog_service_user',
+        default='lms_catalog_service_user',
         null=False,
         blank=False,
         help_text=_(

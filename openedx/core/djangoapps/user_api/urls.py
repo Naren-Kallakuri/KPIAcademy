@@ -2,7 +2,6 @@
 Defines the URL routes for this app.
 """
 
-
 from django.conf import settings
 from django.conf.urls import url
 
@@ -14,11 +13,11 @@ from .accounts.views import (
     AccountRetirementView,
     AccountViewSet,
     DeactivateLogoutView,
-    LMSAccountRetirementView,
-    UsernameReplacementView
+    LMSAccountRetirementView
 )
 from .preferences.views import PreferencesDetailView, PreferencesView
 from .verification_api.views import IDVerificationStatusView
+from .validation.views import RegistrationValidationView
 
 ME = AccountViewSet.as_view({
     'get': 'get',
@@ -152,9 +151,9 @@ urlpatterns = [
         name='accounts_retirement_update'
     ),
     url(
-        r'^v1/accounts/replace_usernames/$',
-        UsernameReplacementView.as_view(),
-        name='username_replacement'
+        r'^v1/validation/registration$',
+        RegistrationValidationView.as_view(),
+        name='registration_validation'
     ),
     url(
         r'^v1/preferences/{}$'.format(settings.USERNAME_PATTERN),

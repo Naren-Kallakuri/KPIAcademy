@@ -72,6 +72,7 @@ module.exports = Merge.smart({
             // Studio
             Import: './cms/static/js/features/import/factories/import.js',
             CourseOrLibraryListing: './cms/static/js/features_jsx/studio/CourseOrLibraryListing.jsx',
+            'js/factories/login': './cms/static/js/factories/login.js',
             'js/factories/textbooks': './cms/static/js/factories/textbooks.js',
             'js/factories/container': './cms/static/js/factories/container.js',
             'js/factories/context_course': './cms/static/js/factories/context_course.js',
@@ -83,15 +84,14 @@ module.exports = Merge.smart({
             // LMS
             SingleSupportForm: './lms/static/support/jsx/single_support_form.jsx',
             AlertStatusBar: './lms/static/js/accessible_components/StatusBarAlert.jsx',
+            LearnerAnalyticsDashboard: './lms/static/js/learner_analytics_dashboard/LearnerAnalyticsDashboard.jsx',
+            UpsellExperimentModal: './lms/static/common/js/components/UpsellExperimentModal.jsx',
+            PortfolioExperimentUpsellModal: './lms/static/common/js/components/PortfolioExperimentUpsellModal.jsx',
             EntitlementSupportPage: './lms/djangoapps/support/static/support/jsx/entitlements/index.jsx',
-            LinkProgramEnrollmentsSupportPage: './lms/djangoapps/support/static/support/jsx/' +
-                                               'program_enrollments/index.jsx',
             PasswordResetConfirmation: './lms/static/js/student_account/components/PasswordResetConfirmation.jsx',
             StudentAccountDeletion: './lms/static/js/student_account/components/StudentAccountDeletion.jsx',
             StudentAccountDeletionInitializer: './lms/static/js/student_account/StudentAccountDeletionInitializer.js',
             ProblemBrowser: './lms/djangoapps/instructor/static/instructor/ProblemBrowser/index.jsx',
-            CustomUserMenuLinks: './lms/static/js/custom_user_menu_links/CustomUserMenuLinks.js',
-            EnterpriseLearnerPortalBanner: './lms/static/js/learner_dashboard/EnterpriseLearnerPortalBanner.jsx',
 
             // Learner Dashboard
             EntitlementFactory: './lms/static/js/learner_dashboard/course_entitlement_factory.js',
@@ -112,7 +112,6 @@ module.exports = Merge.smart({
             LatestUpdate: './openedx/features/course_experience/static/course_experience/js/LatestUpdate.js',
             WelcomeMessage: './openedx/features/course_experience/static/course_experience/js/WelcomeMessage.js',
 
-            AnnouncementsView: './openedx/features/announcements/static/announcements/jsx/Announcements.jsx',
             CookiePolicyBanner: './common/static/js/src/CookiePolicyBanner.jsx',
 
             // Common

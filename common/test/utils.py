@@ -1,13 +1,11 @@
 """
 General testing utilities.
 """
-
-
 import functools
 import sys
 from contextlib import contextmanager
 
-import pytest
+import moto
 from django.dispatch import Signal
 from markupsafe import escape
 from mock import Mock, patch
@@ -110,28 +108,23 @@ def skip_signal(signal, **kwargs):
     and then reconnecting the signal.
     """
     signal.disconnect(**kwargs)
-    try:
-        yield
-    finally:
-        signal.connect(**kwargs)
+    yield
+    signal.connect(**kwargs)
 
 
-class MockS3BotoMixin(object):
+class MockS3Mixin(object):
     """
-    TestCase mixin that mocks the S3BotoStorage save method and s3 connection.
+    TestCase mixin that stubs S3 using the moto library. Note that this will
+    activate httpretty, which will monkey patch socket.
     """
     def setUp(self):
-        super(MockS3BotoMixin, self).setUp()
-        self._mocked_connection = patch('boto.connect_s3', return_value=Mock())
-        self.mocked_connection = self._mocked_connection.start()
-
-        self.patcher = patch('storages.backends.s3boto.S3BotoStorage.save')
-        self.patcher.start()
+        super(MockS3Mixin, self).setUp()
+        self._mock_s3 = moto.mock_s3()
+        self._mock_s3.start()
 
     def tearDown(self):
-        self._mocked_connection.stop()
-        self.patcher.stop()
-        super(MockS3BotoMixin, self).tearDown()
+        self._mock_s3.stop()
+        super(MockS3Mixin, self).tearDown()
 
 
 class reprwrapper(object):
@@ -140,7 +133,7 @@ class reprwrapper(object):
     """
     def __init__(self, func):
         self._func = func
-        self.repr = u'Func: {}'.format(func.__name__)
+        self.repr = 'Func: {}'.format(func.__name__)
         functools.update_wrapper(self, func)
 
     def __call__(self, *args, **kw):
@@ -158,13 +151,3 @@ def normalize_repr(func):
     between worker processes.
     """
     return reprwrapper(func)
-
-
-# Decorator for skipping tests that are not ready to be run with Python 3.x.
-# While we expect many tests to fail with Python 3.x as we transition, this
-# is specifically for tests that rely on external or large scale fixes. It can
-# be added to individual tests or test classes.
-py2_only = pytest.mark.skipif(
-    sys.version_info > (3, 0),
-    reason="This test can only be run with Python 2.7, currently"
-)

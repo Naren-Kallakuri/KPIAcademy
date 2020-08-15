@@ -1,7 +1,6 @@
 """
 A wrapper class to communicate with Gating api
 """
-
 from . import api as gating_api
 
 

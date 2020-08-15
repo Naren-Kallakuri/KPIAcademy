@@ -3,19 +3,19 @@
 Django Admin pages for ContentTypeGatingConfig.
 """
 
+from __future__ import unicode_literals
 
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
 from openedx.core.djangoapps.config_model_utils.admin import StackedConfigModelAdmin
-
 from .models import ContentTypeGatingConfig
 
 
 class ContentTypeGatingConfigAdmin(StackedConfigModelAdmin):
     fieldsets = (
         ('Context', {
-            'fields': ContentTypeGatingConfig.KEY_FIELDS,
+            'fields': ('site', 'org', 'course'),
             'description': _(
                 'These define the context to enable course duration limits on. '
                 'If no values are set, then the configuration applies globally. '

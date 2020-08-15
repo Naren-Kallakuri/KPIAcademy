@@ -1,7 +1,6 @@
 """
 Test password policy forms
 """
-
 import mock
 
 from django.forms import ValidationError

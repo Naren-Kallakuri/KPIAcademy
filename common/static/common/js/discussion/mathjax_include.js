@@ -46,10 +46,10 @@ if (typeof MathJax === 'undefined') {
     window.MathJax = {
         menuSettings: {
             collapsible: true,
-            autocollapse: false,
+            autocollapse: true,
             explorer: true
         }
     };
-    vendorScript.src = 'https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+    vendorScript.src = 'https://cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-MML-AM_SVG';
     document.body.appendChild(vendorScript);
 }

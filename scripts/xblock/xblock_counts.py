@@ -1,5 +1,4 @@
-
-
+from __future__ import print_function
 import argparse
 import csv
 import json
@@ -217,7 +216,7 @@ def _get_course_block_counts(auth_token, block_url):
 
     response = requests.get(block_url, headers=headers)
     if response.status_code != 200:
-        print("url {} returned status code {}".format(block_url, response.status_code))
+        print ("url {} returned status code {}".format(block_url, response.status_code))
         return {}
     response_json = response.json()
 

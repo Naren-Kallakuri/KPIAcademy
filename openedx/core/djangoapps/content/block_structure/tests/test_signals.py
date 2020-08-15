@@ -1,12 +1,10 @@
 """
 Unit tests for the Course Blocks signals
 """
-
-
 import ddt
 from mock import patch
-from opaque_keys.edx.locator import CourseLocator, LibraryLocator
 
+from opaque_keys.edx.locator import LibraryLocator, CourseLocator
 from xmodule.modulestore.exceptions import ItemNotFoundError
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
@@ -60,7 +58,7 @@ class CourseBlocksSignalTest(ModuleStoreTestCase):
             self.course.display_name = test_display_name
             self.store.update_item(self.course, self.user.id)
 
-        self.assertEqual(mock_bs_manager_clear.called, invalidate_cache_enabled)
+        self.assertEquals(mock_bs_manager_clear.called, invalidate_cache_enabled)
 
     def test_course_delete(self):
         bs_manager = get_block_structure_manager(self.course.id)

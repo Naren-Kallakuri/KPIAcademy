@@ -1,10 +1,6 @@
 """
 Views for verifying the health (heartbeat) of the app.
 """
-
-
-import six
-
 from util.json_request import JsonResponse
 
 from .runchecks import runchecks
@@ -26,6 +22,6 @@ def heartbeat(request):
                 status_code = 503  # 503 on any failure
     except Exception as e:
         status_code = 503
-        check_results = {'error': six.text_type(e)}
+        check_results = {'error': unicode(e)}
 
     return JsonResponse(check_results, status=status_code)

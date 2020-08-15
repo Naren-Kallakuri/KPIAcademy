@@ -2,12 +2,9 @@
 Specialized models for oauth_dispatch djangoapp
 """
 
-
 from datetime import datetime
 
-import six
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from django_mysql.models import ListCharField
 from oauth2_provider.settings import oauth2_settings
@@ -15,11 +12,9 @@ from organizations.models import Organization
 from pytz import utc
 
 from openedx.core.djangoapps.oauth_dispatch.toggles import ENFORCE_JWT_SCOPES
-from openedx.core.djangolib.markup import HTML
 from openedx.core.lib.request_utils import get_request_or_stub
 
 
-@python_2_unicode_compatible
 class RestrictedApplication(models.Model):
     """
     This model lists which django-oauth-toolkit Applications are considered 'restricted'
@@ -27,8 +22,6 @@ class RestrictedApplication(models.Model):
 
     A restricted Application will only get expired token/JWT payloads
     so that they cannot be used to call into APIs.
-
-    .. no_pii:
     """
 
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, null=False, on_delete=models.CASCADE)
@@ -36,12 +29,12 @@ class RestrictedApplication(models.Model):
     class Meta:
         app_label = 'oauth_dispatch'
 
-    def __str__(self):
+    def __unicode__(self):
         """
         Return a unicode representation of this object
         """
-        return HTML(u"<RestrictedApplication '{name}'>").format(
-            name=HTML(self.application.name)
+        return u"<RestrictedApplication '{name}'>".format(
+            name=self.application.name
         )
 
     @classmethod
@@ -60,16 +53,12 @@ class RestrictedApplication(models.Model):
         return access_token.expires == datetime(1970, 1, 1, tzinfo=utc)
 
 
-@python_2_unicode_compatible
 class ApplicationAccess(models.Model):
     """
     Specifies access control information for the associated Application.
-
-    .. no_pii:
     """
 
-    application = models.OneToOneField(oauth2_settings.APPLICATION_MODEL, related_name='access',
-                                       on_delete=models.CASCADE)
+    application = models.OneToOneField(oauth2_settings.APPLICATION_MODEL, related_name='access')
     scopes = ListCharField(
         base_field=models.CharField(max_length=32),
         size=25,
@@ -84,7 +73,7 @@ class ApplicationAccess(models.Model):
     def get_scopes(cls, application):
         return cls.objects.get(application=application).scopes
 
-    def __str__(self):
+    def __unicode__(self):
         """
         Return a unicode representation of this object.
         """
@@ -94,24 +83,20 @@ class ApplicationAccess(models.Model):
         )
 
 
-@python_2_unicode_compatible
 class ApplicationOrganization(models.Model):
     """
     Associates a DOT Application to an Organization.
 
     See openedx/core/djangoapps/oauth_dispatch/docs/decisions/0007-include-organizations-in-tokens.rst
     for the intended use of this model.
-
-    .. no_pii:
     """
-    RELATION_TYPE_CONTENT_ORG = u'content_org'
+    RELATION_TYPE_CONTENT_ORG = 'content_org'
     RELATION_TYPES = (
         (RELATION_TYPE_CONTENT_ORG, _('Content Provider')),
     )
 
-    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, related_name='organizations',
-                                    on_delete=models.CASCADE)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, related_name='organizations')
+    organization = models.ForeignKey(Organization)
     relation_type = models.CharField(
         max_length=32,
         choices=RELATION_TYPES,
@@ -134,7 +119,7 @@ class ApplicationOrganization(models.Model):
             queryset = queryset.filter(relation_type=relation_type)
         return [r.organization.name for r in queryset]
 
-    def __str__(self):
+    def __unicode__(self):
         """
         Return a unicode representation of this object.
         """
@@ -148,4 +133,4 @@ class ApplicationOrganization(models.Model):
         """
         Serialize for use in JWT filter claim.
         """
-        return six.text_type(':'.join([self.relation_type, self.organization.short_name]))
+        return unicode(':'.join([self.relation_type, self.organization.short_name]))

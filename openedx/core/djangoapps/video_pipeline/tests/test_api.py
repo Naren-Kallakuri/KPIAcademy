@@ -1,7 +1,6 @@
 """
 Tests for Video Pipeline api utils.
 """
-
 import ddt
 import json
 from mock import Mock, patch
@@ -103,7 +102,7 @@ class TestAPIUtils(VideoPipelineIntegrationMixin, TestCase):
         self.assertFalse(is_updated)
         self.assertDictEqual(error_response, json.loads(error_content))
         mock_logger.exception.assert_called_with(
-            u'[video-pipeline-service] Unable to update transcript credentials -- org=%s -- provider=%s -- response=%s.',
+            '[video-pipeline-service] Unable to update transcript credentials -- org=%s -- provider=%s -- response=%s.',
             credentials_payload['org'],
             credentials_payload['provider'],
             error_content

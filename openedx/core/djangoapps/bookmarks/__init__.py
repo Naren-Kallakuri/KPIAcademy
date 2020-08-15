@@ -1,9 +1,8 @@
 """
 Bookmarks module.
 """
-
-
 from collections import namedtuple
+
 
 DEFAULT_FIELDS = [
     'id',

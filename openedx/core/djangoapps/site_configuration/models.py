@@ -1,8 +1,6 @@
 """
 Django models for site configurations.
 """
-
-
 import collections
 from logging import getLogger
 
@@ -10,14 +8,12 @@ from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils.encoding import python_2_unicode_compatible
 from jsonfield.fields import JSONField
 from model_utils.models import TimeStampedModel
 
 logger = getLogger(__name__)  # pylint: disable=invalid-name
 
 
-@python_2_unicode_compatible
 class SiteConfiguration(models.Model):
     """
     Model for storing site configuration. These configuration override OpenEdx configurations and settings.
@@ -26,22 +22,20 @@ class SiteConfiguration(models.Model):
     Fields:
         site (OneToOneField): one to one field relating each configuration to a single site
         values (JSONField):  json field to store configurations for a site
-
-    .. no_pii:
     """
     site = models.OneToOneField(Site, related_name='configuration', on_delete=models.CASCADE)
-    enabled = models.BooleanField(default=False, verbose_name=u"Enabled")
+    enabled = models.BooleanField(default=False, verbose_name="Enabled")
     values = JSONField(
         null=False,
         blank=True,
         load_kwargs={'object_pairs_hook': collections.OrderedDict}
     )
 
-    def __str__(self):
+    def __unicode__(self):
         return u"<SiteConfiguration: {site} >".format(site=self.site)  # xss-lint: disable=python-wrap-html
 
     def __repr__(self):
-        return self.__str__()
+        return self.__unicode__()
 
     def get_value(self, name, default=None):
         """
@@ -60,9 +54,9 @@ class SiteConfiguration(models.Model):
             try:
                 return self.values.get(name, default)
             except AttributeError as error:
-                logger.exception(u'Invalid JSON data. \n [%s]', error)
+                logger.exception('Invalid JSON data. \n [%s]', error)
         else:
-            logger.info(u"Site Configuration is not enabled for site (%s).", self.site)
+            logger.info("Site Configuration is not enabled for site (%s).", self.site)
 
         return default
 
@@ -116,7 +110,7 @@ class SiteConfiguration(models.Model):
         for example, to do filtering.
 
         Returns:
-            A set of all organizations present in site configuration.
+            A list of all organizations present in site configuration.
         """
         org_filter_set = set()
 
@@ -138,7 +132,6 @@ class SiteConfiguration(models.Model):
         return org in cls.get_all_orgs()
 
 
-@python_2_unicode_compatible
 class SiteConfigurationHistory(TimeStampedModel):
     """
     This is an archive table for SiteConfiguration, so that we can maintain a history of
@@ -147,11 +140,9 @@ class SiteConfigurationHistory(TimeStampedModel):
     Fields:
         site (ForeignKey): foreign-key to django Site
         values (JSONField): json field to store configurations for a site
-
-    .. no_pii:
     """
     site = models.ForeignKey(Site, related_name='configuration_histories', on_delete=models.CASCADE)
-    enabled = models.BooleanField(default=False, verbose_name=u"Enabled")
+    enabled = models.BooleanField(default=False, verbose_name="Enabled")
     values = JSONField(
         null=False,
         blank=True,
@@ -162,7 +153,7 @@ class SiteConfigurationHistory(TimeStampedModel):
         get_latest_by = 'modified'
         ordering = ('-modified', '-created',)
 
-    def __str__(self):
+    def __unicode__(self):
         # pylint: disable=line-too-long
         return u"<SiteConfigurationHistory: {site}, Last Modified: {modified} >".format(  # xss-lint: disable=python-wrap-html
             modified=self.modified,
@@ -170,7 +161,7 @@ class SiteConfigurationHistory(TimeStampedModel):
         )
 
     def __repr__(self):
-        return self.__str__()
+        return self.__unicode__()
 
 
 @receiver(post_save, sender=SiteConfiguration)

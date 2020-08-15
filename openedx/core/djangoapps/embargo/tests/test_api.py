@@ -3,13 +3,9 @@ Tests for EmbargoMiddleware
 """
 
 from contextlib import contextmanager
-
-import geoip2.database
-import maxminddb
-import ddt
-
 import mock
-from mock import patch, MagicMock
+import pygeoip
+import ddt
 
 from django.conf import settings
 from django.test.utils import override_settings
@@ -28,13 +24,14 @@ from student.roles import (
     OrgStaffRole, OrgInstructorRole
 )
 
-from util.testing import UrlResetMixin
 from ..models import (
     RestrictedCourse, Country, CountryAccessRule,
 )
 
+from util.testing import UrlResetMixin
 from .. import api as embargo_api
 from ..exceptions import InvalidAccessPoint
+from mock import patch
 
 
 MODULESTORE_CONFIG = mixed_store_config(settings.COMMON_TEST_DATA_ROOT, {})
@@ -46,6 +43,7 @@ MODULESTORE_CONFIG = mixed_store_config(settings.COMMON_TEST_DATA_ROOT, {})
 @mock.patch.dict(settings.FEATURES, {'EMBARGO': True})
 class EmbargoCheckAccessApiTests(ModuleStoreTestCase):
     """Test the embargo API calls to determine whether a user has access. """
+    shard = 3
     ENABLED_CACHES = ['default', 'mongo_metadata_inheritance', 'loc_cache']
 
     def setUp(self):
@@ -109,8 +107,7 @@ class EmbargoCheckAccessApiTests(ModuleStoreTestCase):
         )
 
         # The user is set to None, because the user has not been authenticated.
-        with self._mock_geoip(""):
-            result = embargo_api.check_course_access(self.course.id, ip_address='0.0.0.0')
+        result = embargo_api.check_course_access(self.course.id, ip_address='0.0.0.0')
         self.assertTrue(result)
 
     def test_no_user_blocked(self):
@@ -139,13 +136,11 @@ class EmbargoCheckAccessApiTests(ModuleStoreTestCase):
     def test_ip_v6(self):
         # Test the scenario that will go through every check
         # (restricted course, but pass all the checks)
-        with self._mock_geoip('US'):
-            result = embargo_api.check_course_access(self.course.id, user=self.user,
-                                                     ip_address='FE80::0202:B3FF:FE1E:8329')
+        result = embargo_api.check_course_access(self.course.id, user=self.user, ip_address='FE80::0202:B3FF:FE1E:8329')
         self.assertTrue(result)
 
     def test_country_access_fallback_to_continent_code(self):
-        # Simulate Geolite2 falling back to a continent code
+        # Simulate PyGeoIP falling back to a continent code
         # instead of a country code.  In this case, we should
         # allow the user access.
         with self._mock_geoip('EU'):
@@ -162,12 +157,11 @@ class EmbargoCheckAccessApiTests(ModuleStoreTestCase):
         # exception when the embargo middleware treated the value as a string.
         # In order to simulate this behavior, we can't simply set `profile.country = None`.
         # (because when we save it, it will set the database field to an empty string instead of NULL)
-        query = u"UPDATE auth_userprofile SET country = NULL WHERE id = %s"
+        query = "UPDATE auth_userprofile SET country = NULL WHERE id = %s"
         connection.cursor().execute(query, [str(self.user.profile.id)])
 
         # Verify that we can check the user's access without error
-        with self._mock_geoip('US'):
-            result = embargo_api.check_course_access(self.course.id, user=self.user, ip_address='0.0.0.0')
+        result = embargo_api.check_course_access(self.course.id, user=self.user, ip_address='0.0.0.0')
         self.assertTrue(result)
 
     def test_caching(self):
@@ -236,27 +230,9 @@ class EmbargoCheckAccessApiTests(ModuleStoreTestCase):
         """
         Mock for the GeoIP module.
         """
-
-        # pylint: disable=unused-argument
-        def mock_country(reader, country):
-            """
-            :param reader:
-            :param country:
-            :return:
-            """
-            magic_mock = MagicMock()
-            magic_mock.country = MagicMock()
-            type(magic_mock.country).iso_code = country_code
-
-            return magic_mock
-
-        patcher = patch.object(maxminddb, 'open_database')
-        patcher.start()
-        country_patcher = patch.object(geoip2.database.Reader, 'country', new=mock_country)
-        country_patcher.start()
-        self.addCleanup(patcher.stop)
-        self.addCleanup(country_patcher.stop)
-        yield
+        with mock.patch.object(pygeoip.GeoIP, 'country_code_by_addr') as mock_ip:
+            mock_ip.return_value = country_code
+            yield
 
 
 @ddt.ddt

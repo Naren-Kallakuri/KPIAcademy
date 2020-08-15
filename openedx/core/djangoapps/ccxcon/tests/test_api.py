@@ -2,21 +2,24 @@
 Unit tests for the API module
 """
 
-
 import datetime
-
 import mock
 import pytz
-import six.moves.urllib.parse  # pylint: disable=import-error
-from opaque_keys.edx.keys import CourseKey
-from six.moves import range
+import urlparse
 
-from openedx.core.djangoapps.ccxcon import api as ccxconapi
+from opaque_keys.edx.keys import CourseKey
 from student.tests.factories import AdminFactory
 from xmodule.modulestore.django import modulestore
-from xmodule.modulestore.tests.django_utils import TEST_DATA_SPLIT_MODULESTORE, SharedModuleStoreTestCase
-from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
+from xmodule.modulestore.tests.django_utils import (
+    SharedModuleStoreTestCase,
+    TEST_DATA_SPLIT_MODULESTORE
+)
+from xmodule.modulestore.tests.factories import (
+    CourseFactory,
+    ItemFactory,
+)
 
+from openedx.core.djangoapps.ccxcon import api as ccxconapi
 from .factories import CcxConFactory
 
 
@@ -39,6 +42,7 @@ class APIsTestCase(SharedModuleStoreTestCase):
     Unit tests for the API module functions
     """
     MODULESTORE = TEST_DATA_SPLIT_MODULESTORE
+    shard = 1
 
     @classmethod
     def setUpClass(cls):
@@ -55,18 +59,18 @@ class APIsTestCase(SharedModuleStoreTestCase):
         )
 
         cls.chapters = [
-            ItemFactory.create(start=start, parent=course) for _ in range(2)
+            ItemFactory.create(start=start, parent=course) for _ in xrange(2)
         ]
         cls.sequentials = flatten([
             [
-                ItemFactory.create(parent=chapter) for _ in range(2)
+                ItemFactory.create(parent=chapter) for _ in xrange(2)
             ] for chapter in cls.chapters
         ])
         cls.verticals = flatten([
             [
                 ItemFactory.create(
                     start=start, due=due, parent=sequential, graded=True, format='Homework', category=u'vertical'
-                ) for _ in range(2)
+                ) for _ in xrange(2)
             ] for sequential in cls.sequentials
         ])
 
@@ -75,7 +79,7 @@ class APIsTestCase(SharedModuleStoreTestCase):
         with cls.store.bulk_operations(course.id, emit_signals=False):
             blocks = flatten([  # pylint: disable=unused-variable
                 [
-                    ItemFactory.create(parent=vertical) for _ in range(2)
+                    ItemFactory.create(parent=vertical) for _ in xrange(2)
                 ] for vertical in cls.verticals
             ])
 
@@ -164,7 +168,7 @@ class APIsTestCase(SharedModuleStoreTestCase):
         self.assertEqual(k_args, tuple())
         self.assertEqual(
             k_kwargs.get('url'),
-            six.moves.urllib.parse.urljoin(self.course.ccx_connector, ccxconapi.CCXCON_COURSEXS_URL)
+            urlparse.urljoin(self.course.ccx_connector, ccxconapi.CCXCON_COURSEXS_URL)
         )
 
         # second call with different status code
@@ -179,7 +183,7 @@ class APIsTestCase(SharedModuleStoreTestCase):
         self.assertEqual(k_args, tuple())
         self.assertEqual(
             k_kwargs.get('url'),
-            six.moves.urllib.parse.urljoin(self.course.ccx_connector, ccxconapi.CCXCON_COURSEXS_URL)
+            urlparse.urljoin(self.course.ccx_connector, ccxconapi.CCXCON_COURSEXS_URL)
         )
 
     @mock.patch('requests_oauthlib.oauth2_session.OAuth2Session.fetch_token', fetch_token_mock)

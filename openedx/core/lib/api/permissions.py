@@ -2,7 +2,6 @@
 API library for Django REST Framework permissions-oriented workflows
 """
 
-
 from django.conf import settings
 from django.http import Http404
 from opaque_keys import InvalidKeyError

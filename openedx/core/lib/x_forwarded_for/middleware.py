@@ -3,10 +3,9 @@ Middleware to use the X-Forwarded-For header as the request IP.
 Updated the libray to use HTTP_HOST and X-Forwarded-Port as
 SERVER_NAME and SERVER_PORT.
 """
-from django.utils.deprecation import MiddlewareMixin
 
 
-class XForwardedForMiddleware(MiddlewareMixin):
+class XForwardedForMiddleware(object):
     """
     Gunicorn 19.0 has breaking changes for REMOTE_ADDR, SERVER_* headers
     that can not override with forwarded and host headers.

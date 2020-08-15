@@ -2,15 +2,15 @@
 Test cases for create_sites_and_configurations command.
 """
 
-
 import mock
+
+from django.test import TestCase
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
-from django.core.management import CommandError, call_command
-from django.test import TestCase
-from edx_oauth2_provider.models import TrustedClient
-from provider.oauth2.models import Client
+from django.core.management import call_command, CommandError
 
+from provider.oauth2.models import Client
+from edx_oauth2_provider.models import TrustedClient
 from openedx.core.djangoapps.theming.models import SiteTheme
 from student.models import UserProfile
 

@@ -12,7 +12,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-
 from django.conf import settings
 from django.template import Context, engines
 from mako.template import Template as MakoTemplate

@@ -1,7 +1,5 @@
 """Factories for generating fake program-related data."""
 # pylint: disable=missing-docstring
-
-
 import factory
 
 

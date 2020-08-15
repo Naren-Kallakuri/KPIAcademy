@@ -1,8 +1,6 @@
 """
 Context dictionary for templates that use the ace_common base template.
 """
-
-
 from django.conf import settings
 from django.core.urlresolvers import NoReverseMatch
 from django.urls import reverse

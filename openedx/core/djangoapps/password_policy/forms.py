@@ -1,10 +1,6 @@
 """
 Forms for the password policy app.
 """
-
-
-import six
-
 from django.contrib import messages
 from django.contrib.admin.forms import AdminAuthenticationForm
 from django.forms import ValidationError
@@ -28,9 +24,9 @@ class PasswordPolicyAwareAdminAuthForm(AdminAuthenticationForm):
                 password_policy_compliance.enforce_compliance_on_login(self.user_cache, cleaned_data['password'])
             except password_policy_compliance.NonCompliantPasswordWarning as e:
                 # Allow login, but warn the user that they will be required to reset their password soon.
-                messages.warning(self.request, six.text_type(e))
+                messages.warning(self.request, e.message)
             except password_policy_compliance.NonCompliantPasswordException as e:
                 # Prevent the login attempt.
-                raise ValidationError(six.text_type(e))
+                raise ValidationError(e.message)
 
         return cleaned_data

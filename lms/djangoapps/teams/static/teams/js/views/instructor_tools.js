@@ -7,9 +7,8 @@
         'edx-ui-toolkit/js/utils/string-utils',
         'teams/js/views/team_utils',
         'common/js/components/utils/view_utils',
-        'text!teams/templates/instructor-tools.underscore',
-        'edx-ui-toolkit/js/utils/html-utils'],
-        function(Backbone, _, gettext, StringUtils, TeamUtils, ViewUtils, instructorToolbarTemplate, HtmlUtils) {
+        'text!teams/templates/instructor-tools.underscore'],
+        function(Backbone, _, gettext, StringUtils, TeamUtils, ViewUtils, instructorToolbarTemplate) {
             return Backbone.View.extend({
 
                 events: {
@@ -18,12 +17,13 @@
                 },
 
                 initialize: function(options) {
+                    this.template = _.template(instructorToolbarTemplate);
                     this.team = options.team;
                     this.teamEvents = options.teamEvents;
                 },
 
                 render: function() {
-                    HtmlUtils.setHtml(this.$el, HtmlUtils.template(instructorToolbarTemplate)({}));
+                    this.$el.html(this.template);
                     return this;
                 },
 
@@ -31,8 +31,7 @@
                     event.preventDefault();
                     ViewUtils.confirmThenRunOperation(
                         gettext('Delete this team?'),
-                        gettext('Deleting a team is permanent and cannot be undone.' +
-                            'All members are removed from the team, and team discussions can no longer be accessed.'),
+                        gettext('Deleting a team is permanent and cannot be undone. All members are removed from the team, and team discussions can no longer be accessed.'),
                         gettext('Delete'),
                         _.bind(this.handleDelete, this)
                     );

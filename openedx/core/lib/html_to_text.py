@@ -1,5 +1,4 @@
 """Provides a function to convert html to plaintext."""
-
 import logging
 from subprocess import PIPE, Popen
 

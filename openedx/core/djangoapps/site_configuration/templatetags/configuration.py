@@ -2,8 +2,6 @@
 Template tags and helper functions for displaying breadcrumbs in page titles
 based on the current site.
 """
-
-
 from django import template
 from django.conf import settings
 from django.templatetags.static import static
@@ -11,7 +9,6 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 
 from openedx.core.djangoapps.theming import helpers as theming_helpers
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
-from openedx.core.djangolib.markup import HTML
 
 register = template.Library()  # pylint: disable=invalid-name
 
@@ -51,7 +48,7 @@ def microsite_css_overrides_file():
     """
     file_path = configuration_helpers.get_value('css_overrides_file', None)
     if file_path is not None:
-        return HTML(u"<link href='{}' rel='stylesheet' type='text/css'>").format(static(file_path))
+        return "<link href='{}' rel='stylesheet' type='text/css'>".format(static(file_path))
     else:
         return ""
 
