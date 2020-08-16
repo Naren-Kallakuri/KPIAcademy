@@ -8,7 +8,61 @@
 %>
 <% footer = get_footer(is_secure=is_secure) %>
 <%namespace name='static' file='static_content.html'/>
+<!------ Footer One --------->
+<footer>
+  <div class="container">
+    <div class="all">
+    <div class="info">
+      <img class="logo_ftr" src="${static.url('img/logo1.png')}">
+      <a href="app/play_store.html">
+        <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png">
+      </a>
+      <a href="app/app_store.html">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Download_on_the_App_Store_Badge.svg/135px-Download_on_the_App_Store_Badge.svg.png">
+      </a>
+    </div>
+    <div class="links1">
+      <h3>Small Print</h3>
+      <a href="#">Terms of Service</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Data Processing</a>
+      <a href="#">Agreement</a>
+      <a href="#">Cookie Policy</a>
+      <a href="#">Contact Us</a>
+    </div>
+    <div class="links1" style="margin-bottom: 0px;">
+      <h3>About us</h3>
+      <a href="about_us/about.html">About KPI Academy</a>
+      <a href="#">Our Blog</a>
+      <a href="#">The Team</a>
+      <a href="#">Help center</a>
+      <a href="#">How It Works</a>
+    </div>
+    <div class="img">
+      <h3>Contact Us</h3>
+      <p>Knowledge Pathways International Ltd</p>
+      <p>Unit 1 Block B, The Knowledge Gateway,</p>
+      <p>University of Essex, Colchester, CO4 3ZL</p>
+      <form>
+        <input type="email" placeholder="Your Email Address">
+        <button><i class="fas fa-paper-plane"></i></button>
+      </form>
+      <div class="icon">
+        <i class="fab fa-facebook-f"></i>
+        <i class="fab fa-twitter"></i>
+        <i class="fab fa-youtube"></i>
+        <i class="fab fa-instagram"></i>
+        <i class="fab fa-linkedin-in"></i>
+      </div>
+    </div>
+    </div>
+  </div>
+  <div class="rights">
+    <h3>© 2020 KPI Academy All rights reserved.</h3>
+  </div>
+</footer>
 
+% if False:
 % if uses_bootstrap:
   <div class="container-fluid wrapper-footer">
     <footer>
@@ -139,4 +193,5 @@
   % for url in footer_css_urls:
     <link rel="stylesheet" type="text/css" href="${url}"></link>
   % endfor
+% endif
 % endif

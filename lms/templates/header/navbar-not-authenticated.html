@@ -19,7 +19,25 @@ from six import text_type
   restrict_enroll_for_course = course and settings.FEATURES.get('RESTRICT_ENROLL_BY_REG_METHOD') and course.enrollment_domain
   allow_public_account_creation = static.get_value('ALLOW_PUBLIC_ACCOUNT_CREATION', settings.FEATURES.get('ALLOW_PUBLIC_ACCOUNT_CREATION'))
 %>
-<nav class="nav-links" aria-label=${_("Supplemental Links")}>
+<div class="link-a">
+  <a class="reg" href="/login${login_query()}">Sign in</a>
+</div>
+<div class="link-a">
+  <a class="reg regtr" href="/register${login_query()}">Register</a>
+</div>
+<i class="fa fa-bars tgl-menu"></i>
+<i class="fas fa-search tgl-search"></i>
+
+% if settings.FEATURES.get('ENABLE_COURSE_DISCOVERY'):
+<div class="search-frm">
+  <i class="fa fa-times close-srch"></i>
+  <form class="search" method="get" action="/courses">
+    <input class="search-input" name="search_query"  type="text" placeholder="Search">
+    <button class="search-button" type="submit"><i class="fas fa-search"></i></button>
+  </form>
+</div>
+% endif
+<!-- <nav class="nav-links" aria-label=${_("Supplemental Links")}>
   <div class="main">
   % if mktg_site_enabled:
     <div class="mobile-nav-item hidden-mobile nav-item">
@@ -65,4 +83,4 @@ from six import text_type
       % endif
     </div>
   </div>
-</nav>
+</nav> -->
