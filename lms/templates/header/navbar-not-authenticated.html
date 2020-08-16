@@ -28,15 +28,6 @@ from six import text_type
 <i class="fa fa-bars tgl-menu"></i>
 <i class="fas fa-search tgl-search"></i>
 
-% if settings.FEATURES.get('ENABLE_COURSE_DISCOVERY'):
-<div class="search-frm">
-  <i class="fa fa-times close-srch"></i>
-  <form class="search" method="get" action="/courses">
-    <input class="search-input" name="search_query"  type="text" placeholder="Search">
-    <button class="search-button" type="submit"><i class="fas fa-search"></i></button>
-  </form>
-</div>
-% endif
 <!-- <nav class="nav-links" aria-label=${_("Supplemental Links")}>
   <div class="main">
   % if mktg_site_enabled:
