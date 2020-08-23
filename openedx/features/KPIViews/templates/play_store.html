@@ -1,0 +1,39 @@
+## mako
+<%page expression_filter="h"/>
+<%inherit file="main.html" />
+<%namespace name='static' file='static_content.html'/>
+<%!
+from django.utils.translation import ugettext as _
+from django.urls import reverse
+
+from openedx.core.djangolib.markup import HTML, Text
+%>
+
+<%block name="pagetitle">${_("KPI Academy - App")}</%block>
+
+<link rel="stylesheet" type="text/css" href="${static.url('KPI/App/play_store.css')}">
+
+<!---- Phone Box -------->
+<div class="phone_box">
+	<div class="container">
+		<h1>Coming Soon</h1>
+		<div class="b">
+			<img src="${static.url('KPI/img/logo1.png')}">
+		</div>
+	</div>
+</div>
+
+
+
+<!---- Register for free ----->
+<div class="reg-free">
+	<div class="container">
+		<div class="content">
+			<div class="tow">
+				<p>Create an account to receive our newsletter, course recommendations and promotions.</p>
+				<a href="/register?next=%2F">Register</a>
+			</div>
+		</div>
+	</div>
+</div>
+

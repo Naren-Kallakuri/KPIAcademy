@@ -31,7 +31,15 @@ from pipeline_mako import render_require_js_path_overrides
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <style>
+      nav.progress.wrapper-course-material{
+        height: unset;
+      }
+      header.course-profile{
+        padding-top: 0px !important;
+        height: unset !important;
+      }
+    </style>
 ## Define a couple of helper functions to make life easier when
 ## embedding theme conditionals into templates. All inheriting
 ## templates have access to these functions, and we can import these

@@ -1,0 +1,88 @@
+## mako
+<%page expression_filter="h"/>
+<%inherit file="main.html" />
+<%namespace name='static' file='static_content.html'/>
+<%!
+from django.utils.translation import ugettext as _
+from django.urls import reverse
+
+from openedx.core.djangolib.markup import HTML, Text
+%>
+
+<%block name="pagetitle">${_("About KPI Academy")}</%block>
+
+<link rel="stylesheet" type="text/css" href="${static.url('KPI/About/about.css')}">
+
+<!-- About Box --->
+<div class="about_box">
+	<div class="container">
+		<h3>About KPI Academy</h3>
+		<h1>Need some help?</h1>
+		<p>How to contact  kpiacademy You can find answers to common queries on our FAQ page.</p>
+		<p>If you wish to get in touch with us, there are a number of ways to do so.</p>
+		<p class="vb">Feedback If you need help using kpiacademy just press the ‘support’ button at the bottom right of any course page. Alternatively you can email <a href="#">support@kpiacademy.uk</a></p>
+		<h1>Becoming a Partner Interested in becoming a kpiacademy Partner?</h1>
+		<p class="vb">Email us at <a href="#">partner.enquiries@kpiacademy.uk</a></p>
+		<h1>Your stories Have a great story about your experience on kpiacademy?</h1>
+		<p>Send us an e-mail at <a href="#">yourstories@kpiacademy.uk</a> We’d love to hear from you.</p>
+		<p>You can also follow us on Twitter, Facebook, Linkedin and YouTube.</p>
+	</div>
+</div>
+
+
+
+
+<!--- Sections -->
+<!-- <div class="sections">
+	<div class="container-fluid">
+		<div class="section">
+			<div class="box fir">
+				<h3>Business</h3>
+			</div>
+			<a href="#" class="box">
+				<svg class="Icon-icon_ISNxI Icon-sBreakpointSizelarge_hkj2H" viewBox="0 0 32 32"><path d="M22.9 32H9v-6H6.9C4.7 26 3 24.3 3 22.1V20h-.5c-.8 0-1.4-.3-1.7-.9-.3-.6-.3-1.3 0-2L3 12.8C3 9.3 4.5 6 7.1 3.6 9.7 1.1 13.2-.1 16.8.1c6.3.4 11.5 5.4 12.1 11.7.5 4.9-1.8 9.6-5.9 12.2v1h-2v-2.2l.5-.3c3.8-2.2 5.9-6.2 5.4-10.6-.5-5.2-4.9-9.5-10.2-9.8-3.1-.2-6 .9-8.2 3C6.2 7.1 5 10 5 13v.2L2.6 18H5v4.1c0 1 .8 1.9 1.9 1.9H11v6h10v-1h2v3z"></path><path d="M16.7 20.4L10.4 14c-.9-.9-1.4-2-1.4-3.3s.5-2.4 1.4-3.3c.9-.9 2.1-1.4 3.4-1.4 1.1 0 2.1.4 3 1.1.8-.7 1.9-1.1 3-1.1 1.2 0 2.3.5 3.2 1.4 1.9 1.9 1.9 4.8.1 6.6l-6.4 6.4zM13.8 8c-.7 0-1.4.3-1.9.8-1.1 1.1-1.1 2.8-.1 3.8l4.9 4.9 4.9-4.9c1-1 1-2.7 0-3.8-1.1-1.1-2.8-1.1-3.8-.1l-1.1 1.1-1.1-1.1c-.5-.4-1.1-.7-1.8-.7z"></path></svg>
+				<h3>Development Paths</h3>
+				<p>dlqsjdqjsdmplqsdhlsqhdlmhqs  qkhdqosfqosh f</p>
+			</a>
+			<a href="#" class="box">
+				<svg class="Icon-icon_ISNxI Icon-sBreakpointSizelarge_hkj2H" viewBox="0 0 32 32"><path d="M9 32v-3.07a8 8 0 01-4.83-2.09c-1.29-1.43-.85-3.22-.46-4.81 0-.19.09-.4.14-.6h-.28A2.94 2.94 0 011 20.15a2.76 2.76 0 01-.18-2.66s1.64-3.76 2.24-5.07a3.46 3.46 0 00.15-.78 17.8 17.8 0 011.22-4.52C6 4.15 10.85 0 17 0a13.58 13.58 0 0111.05 5.29 11 11 0 011.88 3.36 11.58 11.58 0 01-1.75 11A10.42 10.42 0 0126 21.54V27h-2v-6.55l.46-.29a10.2 10.2 0 002.1-1.69A9.66 9.66 0 0028 9.28a8.88 8.88 0 00-1.54-2.74A11.67 11.67 0 0017 2 12.83 12.83 0 006.21 8a16.15 16.15 0 00-1 3.86 4.67 4.67 0 01-.31 1.36c-.6 1.31-2.23 5-2.23 5a.81.81 0 000 .76 1 1 0 00.87.38h2.62L6 20.54a17.16 17.16 0 01-.39 2c-.36 1.46-.55 2.38 0 3C6.76 26.72 9.17 27 10 27h1v3h10v2z"></path><path d="M11 20c3 0 4-2 4-4.62V12h-4v4h2.13c0 2-1.13 2-2.09 2zm7 0c3 0 4-2 4-4.62V12h-4v4h2.13c0 2-1.13 2-2.09 2z"></path></svg>
+				<h3>Businnes Softwares</h3>
+				<p>dlqsjdqjsdmplqsdhlsqhdlmhqs  qkhdqosfqosh f</p>
+			</a>
+			<a href="#" class="box">
+				<svg class="Icon-icon_ISNxI Icon-sBreakpointSizelarge_hkj2H" viewBox="0 0 32 32"><path d="M0 0v24h11.76l-5.65 8h2.45l5.65-8h3.58c2 2.84 4.07 5.74 5.66 8h2.45l-5.66-8H27v-2H2V2h28v17h2V0z"></path><path d="M6.76 17.65l-1.52-1.3 6.6-7.7 6.92 4.95 6.42-9.17 1.64 1.14-7.58 10.83-7.08-5.05-5.4 6.3z"></path></svg>
+				<h3>Short Courses</h3>
+				<p>dlqsjdqjsdmplqsdhlsqhdlmhqs  qkhdqosfqosh f</p>
+			</a>
+			<a href="#" class="box">
+				<svg class="Icon-icon_ISNxI Icon-sBreakpointSizelarge_hkj2H" viewBox="0 0 32 32"><path d="M16 .57L0 11v8h2v-6.62l3 2.06V23l11 8 5-3.64v-2.47l-5 3.68L7 22v-6.18L16 22l9-6.2v8.65L27 23v-8.58L32 11zm0 19L3.53 11 16 3l12.49 8z"></path></svg>
+				<h3>Accreedited Courses</h3>
+				<p>dlqsjdqjsdmplqsdhlsqhdlmhqs  qkhdqosfqosh f</p>
+			</a>
+		</div>
+	</div>
+</div> -->
+
+
+
+<!---- Register for free ----->
+<div class="reg-free">
+	<div class="container">
+		<div class="content">
+			<div class="tow">
+				<p>Create an account to receive our newsletter, course recommendations and promotions.</p>
+				<a href="/register?next=%2F">Register for free</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+
+
+<!----------------------- End Code ------------------------------------------>
+<!----------------- Script ---------------> 
+<!--- Bootstrap ----->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>

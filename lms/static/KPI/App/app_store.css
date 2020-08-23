@@ -1,0 +1,35 @@
+/* Phone Box */
+.phone_box {
+  width: 100%;
+  padding: 20px 0;
+}
+.phone_box h1 {
+  text-align: center;
+  margin: 39px 0 0 0;
+  font-size: 73px;
+  font-weight: 700;
+  color: #3e4347;
+}
+@media (max-width: 540px) {
+  .phone_box h1 {
+    font-size: 45px;
+  }
+}
+.phone_box .b {
+  width: 279px;
+  height: 534px;
+  background-image: url(../img/iphone.png);
+  background-size: 100% 100%;
+  position: relative;
+  background-repeat: no-repeat;
+  margin: 50px auto 10px auto;
+}
+.phone_box .b img {
+  width: 166px;
+  position: absolute;
+  left: 48%;
+  transform: translate(-50%, -50%);
+  top: 50%;
+}
+
+/*# sourceMappingURL=app_store.css.map */

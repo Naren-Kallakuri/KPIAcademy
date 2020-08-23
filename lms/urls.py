@@ -143,6 +143,8 @@ urlpatterns = [
 
     url(r'^dashboard/', include('learner_dashboard.urls')),
     url(r'^api/experiments/', include('experiments.urls', namespace='api_experiments')),
+
+    url(r'^kpiacademy/', include('openedx.features.KPIViews.urls', namespace='kpi_views')),
 ]
 
 if settings.FEATURES.get('ENABLE_MOBILE_REST_API'):

@@ -164,27 +164,32 @@ $('.creative-menu li p').mouseenter(function () {
 
 
 /* Carousel */
-var owl = $('.owl-carousel');
-owl.owlCarousel({
-    items:5,
-    loop:true,
-    margin:10,
-    autoplay:true,
-    autoplayTimeout:2000,
-    autoplayHoverPause:true,
-    responsiveClass:true,
-    responsive:{
-        0:{
-            items:1,
-        },
-        600:{
-            items:2,
-        },
-        927:{
-            items:3,
-        },
-        1000:{
-            items:4,
+try {
+    var owl = $('.owl-carousel');
+    owl.owlCarousel({
+        items:5,
+        loop:true,
+        margin:10,
+        autoplay:true,
+        autoplayTimeout:2000,
+        autoplayHoverPause:true,
+        responsiveClass:true,
+        responsive:{
+            0:{
+                items:1,
+            },
+            600:{
+                items:2,
+            },
+            927:{
+                items:3,
+            },
+            1000:{
+                items:4,
+            }
         }
-    }
-});
+    });   
+}
+catch (e) {
+    console.log(e);
+}
