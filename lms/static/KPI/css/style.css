@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap");
 @font-face {
   font-family: 'Helvetica';
   src: url("../fonts/Helvetica.ttf");
@@ -561,9 +562,10 @@ body {
 }
 .kpi-banner .container-fluid .info h3 {
   margin-bottom: 18px;
-  font-weight: bold;
-  font-size: 48px;
-  color: #3b393f;
+  font-weight: 200;
+  font-size: 44px;
+  color: #6F2E82;
+  font-family: 'Poppins', sans-serif;
 }
 @media (max-width: 1313px) {
   .kpi-banner .container-fluid .info h3 {
@@ -647,55 +649,69 @@ body {
   }
 }
 
-/* Bar One */
-.bar_one {
+/* Why */
+.why {
   width: 100%;
+  padding-top: 27px;
   background-color: #fafafa;
   border-top: 1px solid #f3f3f3;
-  border-bottom: 2px solid #f3f3f3;
 }
-@media (max-width: 1022px) {
-  .bar_one {
-    display: none;
-  }
-}
-.bar_one .container {
+.why .container {
   width: 100%;
   height: 100%;
 }
-.bar_one .container .allBar {
+.why .container .why_content {
+  width: 100%;
+  margin: 37px 0;
+}
+.why .container .why_content h3 {
+  margin-bottom: 43px;
+  font-weight: 600;
+  font-size: 24px;
+  text-align: center;
+}
+.why .container .why_content .why_boxs {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
 }
-.bar_one .container .allBar .bar {
-  padding: 15px 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.why .container .why_content .why_boxs .why_box {
+  padding: 0 20px;
 }
-.bar_one .container .allBar .bar .number {
-  margin-right: 15px;
-  width: 30px;
-  height: 30px;
-  border: 1px solid #ababab;
-  border-radius: 50%;
-  text-align: center;
-  line-height: 29px;
-  color: #ababab;
-  font-weight: 700;
+.why .container .why_content .why_boxs .why_box svg {
+  fill: #222;
 }
-.bar_one .container .allBar .bar h3 {
-  color: #6b6b6b;
-  margin: 0;
-  font-size: 17px;
+.why .container .why_content .why_boxs .why_box h4 {
+  color: #222;
+  font-size: 20px;
+  margin: 24px 0 18px 0px;
   font-weight: 600;
+}
+.why .container .why_content .why_boxs .why_box p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+@media (max-width: 1022px) {
+  .why .container .why_content .why_boxs {
+    grid-template-columns: repeat(1, 1fr);
+  }
+  .why .container .why_content .why_boxs .why_box {
+    margin-bottom: 41px;
+  }
+  .why .container .why_content .why_boxs .why_box svg {
+    margin: 0 auto;
+    display: block;
+  }
+  .why .container .why_content .why_boxs .why_box h4, .why .container .why_content .why_boxs .why_box p {
+    text-align: center;
+  }
 }
 
 /* Leasons */
 .leasons {
   width: 100%;
-  margin-top: 73px;
+  margin-top: 63px;
   padding: 20px 0;
 }
 .leasons h2 {
@@ -703,8 +719,9 @@ body {
   padding: 0 0 17px 0;
   border-bottom: 2px solid #e7e7e7;
   margin: 0;
+  font-weight: 600;
   text-align: center;
-  font-size: 36px;
+  font-size: 24px;
   position: relative;
 }
 .leasons h2:before {
@@ -733,34 +750,67 @@ body {
 .leasons .bas {
   width: 100%;
   display: grid;
-  grid-gap: 24px 26px;
-  margin: 30px 0px;
-  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 15px;
+  margin: 42px 0px 0 0;
+  grid-template-columns: repeat(3, 1fr);
 }
 .leasons .bas .sl {
   display: block;
   text-decoration: none;
   text-align: center;
-  padding: 16px 0px;
+  padding: 31px 0px;
+  overflow: hidden;
+  position: relative;
   cursor: pointer;
 }
-.leasons .bas .sl:hover svg {
-  fill: #6f2e84;
+.leasons .bas .sl:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  background-color: #000000b5;
 }
-.leasons .bas .sl:hover h3 {
-  color: #6f2e84;
+.leasons .bas .sl .back {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  transition: all 1.2s;
+  left: 0;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+.leasons .bas .sl .back_accreedited_courses {
+  background-image: url(../img/subjects/marketing.jpg);
+}
+.leasons .bas .sl .back_development_paths {
+  background-image: url(../img/development.jpg);
+}
+.leasons .bas .sl .back_businnes_softwares {
+  background-image: url(../img/softwares.jpg);
+}
+.leasons .bas .sl:hover .back {
+  transform: scale(1.2);
+  transition: all 1.5s;
 }
 .leasons .bas .sl svg {
-  fill: #269ab4;
+  fill: #FFF;
   transition: .2s;
   margin-bottom: 17px;
+  z-index: 3;
+  position: relative;
 }
 .leasons .bas .sl h3 {
-  color: #222;
+  color: #FFF;
   margin: 0;
   transition: .2s;
   font-weight: 600;
-  font-size: 21px;
+  position: relative;
+  z-index: 3;
+  font-size: 19px;
 }
 @media (max-width: 1482px) {
   .leasons .bas {
@@ -777,6 +827,18 @@ body {
     grid-template-columns: repeat(1, 1fr);
   }
 }
+.leasons .view_all {
+  display: block;
+  padding: 9px 0;
+  border: 1.6px solid #269ab4;
+  text-align: center;
+  margin: 43px auto 0 auto;
+  color: #269ab4;
+  font-size: 14px;
+  font-weight: 800;
+  width: 147px;
+  text-decoration: none;
+}
 
 /* Free Courses */
 .top_free {
@@ -785,11 +847,12 @@ body {
 }
 .top_free h2 {
   color: #222;
-  padding: 17px 0;
+  padding: 0 0 17px 0;
   border-bottom: 2px solid #e7e7e7;
   margin: 0;
+  font-weight: 600;
   text-align: center;
-  font-size: 36px;
+  font-size: 24px;
   position: relative;
 }
 .top_free h2:before {
@@ -1162,6 +1225,7 @@ body {
 /* Register */
 .reg-free {
   width: 100%;
+  margin-top: 37px;
   background: #ededee;
 }
 .reg-free .container {
@@ -1196,194 +1260,115 @@ body {
   background: #6a2f8d;
 }
 
-/* Footer */
-footer {
+/* footer.kpi-footer */
+footer.kpi-footer {
   width: 100%;
   padding: 29px 0 0 0;
+  background-color: #3a343a;
 }
-footer .all {
-  display: flex;
-  margin: 20px 0 31px 0;
+footer.kpi-footer .all {
+  display: grid;
+  margin: 20px 0 83px 0;
   width: 100%;
   height: 100%;
+  grid-template-columns: repeat(5, 1fr);
+  grid-gap: 10px;
 }
-footer .all .all > div {
-  padding: 0 10px;
+footer.kpi-footer .all .all > div {
+  padding: 0 15px;
 }
-footer .all .img {
-  width: 32%;
-  			/*
-  			img{
-  			    width: 163px;
-      			margin: 15px 0 0 0;
-      		}*/
-}
-footer .all .img h3 {
-  color: #3a343a;
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 13px;
-}
-footer .all .img p {
-  color: #3a343a;
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 24px;
-}
-footer .all .img form {
-  width: 81%;
-  height: 38px;
-  position: relative;
-  margin-top: 16px;
-}
-footer .all .img form input {
-  width: 100%;
-  height: 100%;
-  background: #ededee;
-  border: 2px solid #269ab4;
-  outline: none;
-  text-indent: 5px;
-  transition: .2s;
-  font-size: 14px;
-  font-weight: 400;
-}
-footer .all .img form input:focus {
-  border: 2px solid #6f2e84;
-  transition: .2s;
-}
-footer .all .img form input:focus + button {
-  transition: .2s;
-  background: #6f2e84;
-}
-footer .all .img form button {
-  position: absolute;
-  right: 0;
-  height: 100%;
-  border: 0;
-  width: 52px;
-  transition: .2s;
-  background: #269ab4;
+footer.kpi-footer .all .links1 h3 {
   color: #FFF;
-  font-weight: bold;
-  outline: none;
-}
-footer .all .img form button i {
-  color: #FFF;
-}
-footer .all .img .icon {
-  margin: 20px 0 10px 0;
-}
-footer .all .img .icon i {
-  cursor: pointer;
-  font-size: 23px;
-  margin-right: 19px;
-}
-footer .all .img .icon p {
-  margin: 0;
-  font-size: 15px;
-  margin-bottom: 5px;
-}
-footer .all .info {
-  width: 23.3333333%;
-}
-footer .all .info .logo_ftr {
-  width: 138px;
-  margin: 10px 0 15px 14px;
-}
-footer .all .info a {
-  text-decoration: none;
-}
-footer .all .info a img {
-  width: 187px;
-}
-footer .all .info a:last-of-type img {
-  width: 164px;
-  margin-left: 11px;
-  margin-bottom: 17px;
-}
-footer .all .links1 {
-  width: 23.3333333%;
-}
-footer .all .links1 h3 {
-  color: #3a343a;
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 13px;
+  margin-bottom: 12px;
 }
-footer .all .links1 a {
+footer.kpi-footer .all .links1 a {
   display: block;
   margin: 0;
   margin-bottom: 8px;
-  font-size: 16px;
+  font-size: 14px;
   letter-spacing: 0.5px;
-  color: #3a343a;
-  font-weight: 700;
+  color: #FFF;
+  font-weight: 200;
 }
-@media (max-width: 1086px) {
-  footer .all {
-    flex-wrap: wrap;
+@media (max-width: 1112px) {
+  footer.kpi-footer .all {
+    grid-template-columns: repeat(3, 1fr);
   }
-  footer .all .img {
-    width: 50%;
-    margin-bottom: 24px;
-  }
-  footer .all .info {
-    width: 50%;
-    text-align: center;
-    margin-bottom: 24px;
-  }
-  footer .all .info .logo_ftr {
-    margin-right: auto;
-    margin-left: auto;
-    display: block;
-  }
-  footer .all .info a:last-of-type img {
-    margin: 0;
-  }
-  footer .all .links1 {
-    width: 50%;
-    margin-bottom: 24px;
+  footer.kpi-footer .all .links1 {
+    padding: 0 !important;
+    margin-bottom: 28px;
   }
 }
-@media (max-width: 991px) {
-  footer .all .info a:last-of-type img {
-    margin-left: 11px;
-    margin-bottom: 17px;
+@media (max-width: 767px) {
+  footer.kpi-footer .all {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
-@media (max-width: 825px) {
-  footer .all .img {
-    width: 100%;
-  }
-  footer .all .info {
-    width: 100%;
-  }
-  footer .all .info a:last-of-type img {
-    margin: 0;
-  }
-  footer .all .links1 {
-    width: 100%;
-    text-align: center;
-    margin-bottom: 24px;
+@media (max-width: 450px) {
+  footer.kpi-footer .all {
+    grid-template-columns: repeat(1, 1fr);
   }
 }
-@media (max-width: 385px) {
-  footer .all .info a:last-of-type img {
-    margin-left: 11px;
-    margin-bottom: 17px;
-  }
-}
-footer .rights {
+footer.kpi-footer .rights {
   width: 100%;
-  background-color: #3a343a;
+  background: #4a4d55;
 }
-footer .rights h3 {
+footer.kpi-footer .rights h3 {
   margin: 0;
   text-align: center;
   padding: 13px 0;
   font-size: 17px;
   color: #FFF;
+}
+
+.btn-blue, .dashboard-banner .wrapper-msg .msg.has-actions .donate-actions .action-donate, .account-settings-sections .section .account-deletion-details .paragon__modal-open .paragon__btn:not(.cancel-btn), .login-register .action-primary, .financial-assistance-wrapper .financial-assistance-form .action-primary, .verification-process .action-primary-blue, .verification-process .carousel .wrapper-task .controls .control .action, .verification-process .carousel .wrapper-task .controls .control .entitlement-actions-wrapper .entitlement-action, .entitlement-actions-wrapper .verification-process .carousel .wrapper-task .controls .control .entitlement-action, .verification-process .carousel .wrapper-task .msg .list-actions .action-retakephotos a, .verification-process .carousel #wrapper-review .review-task-name .list-actions .action-editname a, .verification-process.step-select-track .register-choice-audit .action-select input, .verification-process.step-confirmation .course-info .options .action-course, .verification-process.step-confirmation .course-info .course-actions .action-dashboard, .reverify-blocked .action-primary, .wrapper-authorize .btn-authorization-allow, .wrapper-msg.wrapper-auto-cert .auto-cert-message .has-actions .msg-actions .btn, .text-me-fragment form .form-field .action-primary, .view-profile .profile-self .wrapper-profile-field-account-privacy .u-field-account_privacy .btn-change-privacy, 
+.search-bar .search-button, #dashboard-search-bar .search-button, .search-bar .cancel-button{
+    /* background: #126f9a;
+    background-image: initial;
+    background-position-x: initial;
+    background-position-y: initial;
+    background-size: initial;
+    background-repeat-x: initial;
+    background-repeat-y: initial;
+    background-attachment: initial;
+    background-origin: initial;
+    background-clip: initial;
+    background-color: rgb(18, 111, 154);
+    color: #fff; */
+    text-decoration: none !important;
+    color: #FFF !important;
+    font-size: 18px !important;
+    background: #269ab4 !important;
+    cursor: pointer !important;
+    line-height: 1.8 !important;
+    transition: .3s !important;
+    font-weight: 500 !important;
+}
+
+.btn-blue, .dashboard-banner .wrapper-msg .msg.has-actions .donate-actions .action-donate, .account-settings-sections .section .account-deletion-details .paragon__modal-open .paragon__btn:not(.cancel-btn), .login-register .action-primary, .financial-assistance-wrapper .financial-assistance-form .action-primary, .verification-process .action-primary-blue, .verification-process .carousel .wrapper-task .controls .control .action, .verification-process .carousel .wrapper-task .controls .control .entitlement-actions-wrapper .entitlement-action, .entitlement-actions-wrapper .verification-process .carousel .wrapper-task .controls .control .entitlement-action, .verification-process .carousel .wrapper-task .msg .list-actions .action-retakephotos a, .verification-process .carousel #wrapper-review .review-task-name .list-actions .action-editname a, .verification-process.step-select-track .register-choice-audit .action-select input, .verification-process.step-confirmation .course-info .options .action-course, .verification-process.step-confirmation .course-info .course-actions .action-dashboard, .reverify-blocked .action-primary, .wrapper-authorize .btn-authorization-allow, .wrapper-msg.wrapper-auto-cert .auto-cert-message .has-actions .msg-actions .btn, .text-me-fragment form .form-field .action-primary, .view-profile .profile-self .wrapper-profile-field-account-privacy .u-field-account_privacy .btn-change-privacy
+{
+  padding: 4px 17px !important;
+}
+
+.btn-blue:hover, 
+.login-register .action-primary :hover, 
+.financial-assistance-wrapper .financial-assistance-form .action-primary :hover
+.verification-process .action-primary-blue :hover, 
+.verification-process .carousel .wrapper-task .controls .control .action :hover, 
+.verification-process .carousel .wrapper-task .controls .control .entitlement-actions-wrapper .entitlement-action :hover, 
+.entitlement-actions-wrapper .verification-process .carousel .wrapper-task .controls .control .entitlement-action:hover, 
+.verification-process .carousel .wrapper-task .msg .list-actions :hover.action-retakephotos a :hover, 
+.verification-process.step-select-track .register-choice-audit .action-select input:hover, 
+.verification-process.step-confirmation .course-info .options .action-course:hover, 
+.verification-process.step-confirmation .course-info .course-actions .action-dashboard:hover, 
+.reverify-blocked .action-primary, .wrapper-authorize .btn-authorization-allow:hover, 
+.wrapper-msg.wrapper-auto-cert .auto-cert-message .has-actions .msg-actions .btn:hover, 
+.text-me-fragment form .form-field .action-primary:hover, 
+.view-profile .profile-self .wrapper-profile-field-account-privacy .u-field-account_privacy .btn-change-privacy:hover,
+.search-bar .search-button:hover, .search-bar .cancel-button:hover{ {
+  background: #6a2f8d !important;
 }
 
 /*# sourceMappingURL=style.css.map */
